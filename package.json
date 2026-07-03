@@ -48,5 +48,13 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.3"
+  },
+  "overrides": {
+    "@astrojs/tailwind": {
+      "astro": "$astro"
+    },
+    "astro-pagefind": {
+      "astro": "$astro"
+    }
   }
 }
