@@ -17,7 +17,8 @@ interface AdminDashboardProps {
   posts: Post[];
 }
 
-export default function AdminDashboard({ posts }: AdminDashboardProps) {
+export default function AdminDashboard({ posts: initialPosts }: AdminDashboardProps) {
+  const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [activeTab, setActiveTab] = useState<'posts' | 'settings'>('posts');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [creationMode, setCreationMode] = useState<'choose' | 'write' | 'import'>('choose');
@@ -31,6 +32,20 @@ export default function AdminDashboard({ posts }: AdminDashboardProps) {
       month: 'short',
       day: 'numeric'
     }).toUpperCase();
+  };
+
+  const toggleDraftStatus = (id: string) => {
+    setPosts(posts.map(post => 
+      post.id === id ? { ...post, draft: !post.draft } : post
+    ));
+    alert('Draft status toggled! Note: As this is a static site, you must also update the markdown frontmatter (draft: true/false) to apply this change permanently.');
+  };
+
+  const deletePost = (id: string) => {
+    if (confirm('Are you sure you want to hide this post from the dashboard?')) {
+      setPosts(posts.filter(post => post.id !== id));
+      alert('Post removed from view! Note: You must manually delete the markdown file from src/content/posts/ to remove it permanently.');
+    }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,10 +184,10 @@ Write your markdown content here...
                           <button className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="View">
                             <Eye size={16} />
                           </button>
-                          <button className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Edit">
+                          <button onClick={() => toggleDraftStatus(post.id)} className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Toggle Draft">
                             <Edit3 size={16} />
                           </button>
-                          <button className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete">
+                          <button onClick={() => deletePost(post.id)} className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete">
                             <Trash2 size={16} />
                           </button>
                         </div>

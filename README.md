@@ -127,23 +127,32 @@ git add .
 git commit -m "Initial commit"
 ```
 
-**Step 2: Connect to GitHub**
-1. Log in to [GitHub](https://github.com/) and click the "+" icon in the top right to **Create a new repository**.
-2. Give it a name, choose "Public" or "Private", and click **Create repository** (do not add a README, .gitignore, or license yet).
+**Step 2: Connect to GitHub (including publishing to a different account)**
+1. Log in to your target [GitHub](https://github.com/) account and click the "+" icon in the top right to **Create a new repository**.
+2. Give it a name, choose "Public", and click **Create repository** (do not add a README, .gitignore, or license yet).
 3. Copy the URL of your new repository.
-4. Run these commands in your terminal to link and upload your code:
+4. Run these commands in your terminal to link and upload your code. If you are pushing to a different GitHub account than your default, you may need to use an SSH key or Personal Access Token (PAT) for authentication when prompted.
 ```bash
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+git remote add origin https://github.com/TARGET_USERNAME/TARGET_REPOSITORY.git
 git branch -M main
 git push -u origin main
 ```
+*Note for multi-account users: If `git push` fails due to permissions, configure a new SSH key for the target account or use `https://<PAT>@github.com/TARGET_USERNAME/TARGET_REPOSITORY.git` as the remote origin.*
 
-**Step 3: Enable GitHub Pages**
+**Step 3: Enable GitHub Pages & Custom Domain (ai-n-it.com)**
 1. On your GitHub repository page, click **Settings** (top tab).
 2. Click **Pages** on the left sidebar.
 3. Under **Build and deployment**, set the **Source** dropdown to **GitHub Actions**.
 4. Your site will now build and deploy automatically. You can check the progress in the **Actions** tab.
-5. Once complete, GitHub will provide you with a live URL (e.g., `https://yourusername.github.io/yourrepo/`).
+5. **Set up Custom Domain**: Under the **Custom domain** section on the Pages settings screen, enter `ai-n-it.com` and click **Save**.
+6. **Configure DNS Records**: Log in to your domain registrar (where you bought `ai-n-it.com`) and add the following records:
+   - **A Records** pointing to GitHub IPs:
+     - `185.199.108.153`
+     - `185.199.109.153`
+     - `185.199.110.153`
+     - `185.199.111.153`
+   - **CNAME Record**: Host `www`, pointing to `TARGET_USERNAME.github.io`.
+7. **Enable SSL (HTTPS)**: Once DNS propagates (can take up to 24 hours), go back to GitHub Pages settings and check the **Enforce HTTPS** box. GitHub automatically provisions a free TLS/SSL certificate via Let's Encrypt for your domain.
 
 *Note: The included GitHub workflow securely deletes the `/admin` route before publishing to ensure it is never exposed online.*
 

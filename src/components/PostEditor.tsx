@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useBlogManager } from './BlogManager';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Edit3, Eye, Layout } from 'lucide-react';
 
 export default function PostEditor() {
   const { drafts, addDraft, updateDraft, deleteDraft } = useBlogManager();
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'split' | 'edit' | 'preview'>('split');
   
   // Create a new draft on initial load if none exist
   useEffect(() => {
     if (drafts.length === 0) {
-      addDraft({ title: 'New Post', content: '# Welcome to the Editor\n\nStart typing here...' });
+      addDraft({ title: 'New Post', slug: 'new-post', content: '# Welcome to the Editor\n\nStart typing here...' });
     }
   }, [drafts.length, addDraft]);
 
@@ -41,12 +43,16 @@ export default function PostEditor() {
     updateDraft(activeDraft.id, { title: e.target.value });
   };
 
+  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updateDraft(activeDraft.id, { slug: e.target.value });
+  };
+
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     updateDraft(activeDraft.id, { content: e.target.value });
   };
 
   const handleCreateNew = () => {
-    addDraft({ title: 'Untitled Draft', content: '' });
+    addDraft({ title: 'Untitled Draft', slug: 'untitled-draft', content: '' });
   };
 
   return (
@@ -122,30 +128,71 @@ export default function PostEditor() {
               placeholder="Post Title"
               className="w-full text-4xl font-display font-bold bg-transparent outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-900 dark:text-white transition-colors"
             />
-            <div className="text-xs font-medium text-slate-400 mt-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500"></span>
-              Last updated: {new Date(activeDraft.date).toLocaleString()}
+            <div className="mt-2 flex items-center">
+              <span className="text-slate-400 dark:text-slate-500 text-sm mr-2 font-mono">/blog/</span>
+              <input
+                type="text"
+                value={activeDraft.slug || ''}
+                onChange={handleSlugChange}
+                placeholder="post-slug"
+                className="text-sm font-mono bg-transparent outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-600 dark:text-slate-400 border-b border-transparent hover:border-slate-200 focus:border-slate-300 dark:hover:border-slate-700 dark:focus:border-slate-600 transition-colors py-0.5"
+              />
+            </div>
+            <div className="flex justify-between items-center mt-4">
+              <div className="text-xs font-medium text-slate-400 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                Last updated: {new Date(activeDraft.date).toLocaleString()}
+              </div>
+              
+              {/* View Toggle */}
+              <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('edit')}
+                  className={`p-1.5 rounded-md flex items-center justify-center transition-colors ${viewMode === 'edit' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                  title="Edit Mode"
+                >
+                  <Edit3 size={16} />
+                </button>
+                <button
+                  onClick={() => setViewMode('split')}
+                  className={`p-1.5 rounded-md flex items-center justify-center transition-colors ${viewMode === 'split' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                  title="Split Mode"
+                >
+                  <Layout size={16} />
+                </button>
+                <button
+                  onClick={() => setViewMode('preview')}
+                  className={`p-1.5 rounded-md flex items-center justify-center transition-colors ${viewMode === 'preview' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                  title="Preview Mode"
+                >
+                  <Eye size={16} />
+                </button>
+              </div>
             </div>
           </div>
 
           {/* Split Pane */}
           <div className="flex-1 flex flex-col md:flex-row min-h-0 bg-slate-50/50 dark:bg-slate-950">
             {/* Editor */}
-            <div className="flex-1 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 p-6">
-              <textarea
-                value={activeDraft.content}
-                onChange={handleContentChange}
-                placeholder="Start writing in Markdown..."
-                className="w-full h-full resize-none bg-transparent outline-none font-mono text-sm leading-relaxed text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600"
-              />
-            </div>
+            {(viewMode === 'edit' || viewMode === 'split') && (
+              <div className={`flex-1 border-b md:border-b-0 ${viewMode === 'split' ? 'md:border-r border-slate-200 dark:border-slate-800' : ''} p-6`}>
+                <textarea
+                  value={activeDraft.content}
+                  onChange={handleContentChange}
+                  placeholder="Start writing in Markdown..."
+                  className="w-full h-full resize-none bg-transparent outline-none font-mono text-sm leading-relaxed text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                />
+              </div>
+            )}
 
             {/* Preview */}
-            <div className="flex-1 p-8 overflow-y-auto bg-white dark:bg-slate-900 shadow-inner">
-              <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-display prose-a:text-accent">
-                <ReactMarkdown>{activeDraft.content}</ReactMarkdown>
+            {(viewMode === 'preview' || viewMode === 'split') && (
+              <div className="flex-1 p-8 overflow-y-auto bg-white dark:bg-slate-900 shadow-inner">
+                <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-display prose-a:text-accent">
+                  <ReactMarkdown>{activeDraft.content}</ReactMarkdown>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </motion.div>
       </AnimatePresence>

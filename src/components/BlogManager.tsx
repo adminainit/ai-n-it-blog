@@ -3,13 +3,14 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 export interface DraftPost {
   id: string;
   title: string;
+  slug: string;
   content: string; // Markdown content
   date: string;
 }
 
 interface BlogManagerContextType {
   drafts: DraftPost[];
-  addDraft: (draft: Omit<DraftPost, 'id' | 'date'>) => void;
+  addDraft: (draft: Omit<DraftPost, 'id' | 'date' | 'slug'> & { slug?: string }) => void;
   updateDraft: (id: string, updates: Partial<DraftPost>) => void;
   deleteDraft: (id: string) => void;
   getDraft: (id: string) => DraftPost | undefined;
@@ -41,9 +42,10 @@ export function BlogManagerProvider({ children }: { children: ReactNode }) {
     }
   }, [drafts, isLoaded]);
 
-  const addDraft = (draft: Omit<DraftPost, 'id' | 'date'>) => {
+  const addDraft = (draft: Omit<DraftPost, 'id' | 'date' | 'slug'> & { slug?: string }) => {
     const newDraft: DraftPost = {
       ...draft,
+      slug: draft.slug || draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
       id: crypto.randomUUID(),
       date: new Date().toISOString(),
     };
