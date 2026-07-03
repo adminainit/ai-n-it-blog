@@ -32,6 +32,9 @@ Before you can run or deploy this application locally, you must install the foll
 
 ## 2. Running the App Locally (Admin Portal & Public Site)
 
+**Prerequisite:** You must have [Node.js](https://nodejs.org/) installed on your computer. 
+> **Troubleshooting `npm is not recognized`:** If you run the setup steps or scripts below and see an error saying `npm : The term 'npm' is not recognized as the name of a cmdlet...`, it means Node.js is not installed or your terminal hasn't been restarted. **Download and install Node.js**, then completely close and restart your terminal (or VS Code) before trying again.
+
 The local development server allows you to see the website exactly as it will appear online, and gives you access to the private **Admin Portal** to create blog posts.
 
 **Step 1:** Open your terminal and navigate to the project folder.
@@ -52,6 +55,7 @@ Open PowerShell and run:
 ```powershell
 .\run-local-admin.ps1
 ```
+*(Note: If you receive a "running scripts is disabled on this system" error, run this command first: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` and type `Y` to confirm. Then run the script again.)*
 
 *(Alternatively, you can just run `npm run dev` in your terminal).*
 
