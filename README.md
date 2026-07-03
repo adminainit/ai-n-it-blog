@@ -1,0 +1,188 @@
+# Corporate Insights Blog
+
+A polished, corporate-themed static blog built with Astro, React, and Tailwind CSS. It features a custom Markdown editor with live preview, a complete Markdown/MDX workflow, and white-label branding configurations. 
+
+This project is fully compatible with both **x86-64** and **ARM** architectures natively, ensuring seamless development and deployment on any modern Windows, macOS, or Linux device (including Apple Silicon M-series chips and Raspberry Pi).
+
+## Features
+
+- **Light/Dark Mode Theme**: Built-in responsive theme toggle leveraging Tailwind's `dark` mode and React state.
+- **Admin Portal & Editor**: A split-pane React-based Markdown editor with real-time preview, local storage persistence, and smooth Framer Motion entry animations.
+- **Visual Theme Configurator**: A GUI-driven settings panel inside the Admin Portal to instantly update the site title, description, logo, and core color palette (Primary, Secondary, Accent) without writing code.
+- **Lightning Fast Static Search**: Integrated with **Pagefind** to provide instant, offline-capable, and bandwidth-friendly static search capabilities.
+- **Automated RSS & Sitemaps**: Automatically generates `rss.xml` and `sitemap-index.xml` upon build, ensuring top-tier SEO and feed reader compatibility.
+- **Dynamic Image Optimization**: Astro's native asset optimization is built-in. Use local images or remote URLs for post thumbnails and get automatically resized and optimized webp outputs.
+- **Corporate Branding**: Configurable white-label branding, typography, and color palette optimized for professional audiences.
+- **Static Site Generation**: Fast performance driven by Astro, outputting static HTML/CSS/JS ready for deployment.
+
+---
+
+## 1. Prerequisites (Zero Knowledge Setup)
+
+Before you can run or deploy this application locally, you must install the following core tools. If you already have these, you can skip to Step 2.
+
+1. **Node.js (v18.x or later)**: This is the runtime environment required to run JavaScript locally.
+   - **How to install**: Go to [nodejs.org](https://nodejs.org/), download the "LTS" (Long Term Support) version for your operating system, and run the installer.
+   - **Verification**: Open your terminal (Command Prompt on Windows, Terminal on Mac/Linux) and type `node -v`. It should print a version number like `v18.17.0` or higher.
+2. **Git**: A version control system used to save your code and sync it with GitHub.
+   - **How to install**: Go to [git-scm.com](https://git-scm.com/downloads) and download the installer for your OS.
+   - **Verification**: In your terminal, type `git --version`.
+
+---
+
+## 2. Running the App Locally (Admin Portal & Public Site)
+
+The local development server allows you to see the website exactly as it will appear online, and gives you access to the private **Admin Portal** to create blog posts.
+
+**Step 1:** Open your terminal and navigate to the project folder.
+**Step 2:** Install all the required packages (this downloads the tools the project needs):
+```bash
+npm install
+```
+**Step 3:** Start the local development server:
+
+**On Linux/macOS:**
+```bash
+chmod +x run-local-admin.sh
+./run-local-admin.sh
+```
+
+**On Windows:**
+Open PowerShell and run:
+```powershell
+.\run-local-admin.ps1
+```
+
+*(Alternatively, you can just run `npm run dev` in your terminal).*
+
+**Step 4:** View the site in your browser:
+- **Public Site**: Open `http://localhost:3000/`
+- **Admin Portal (Editor)**: Open `http://localhost:3000/admin/`
+
+---
+
+## 3. The Admin Portal: Visual Theme Configurator
+
+The Admin Portal now includes a **Site Settings & Theme Configurator** directly inside the web UI.
+
+1. Open the **Admin Portal** (`http://localhost:3000/admin/`).
+2. On the Dashboard view, you will see the **Site Branding & Theme Settings** panel.
+3. You can visually edit:
+   - **Site Title** & **Description**
+   - **Logo Text**
+   - **Primary, Secondary, and Accent Colors** (using the built-in color picker).
+4. Click **Save Settings**. This leverages a custom backend API to automatically update `site.config.js` and `tailwind.config.mjs` on your local filesystem!
+5. *Note: You may need to refresh your browser or restart the dev server to see the tailwind color changes fully propagate.*
+
+---
+
+## 4. Writing and Publishing Content
+
+### Step 1: Draft your Post
+1. Open the **Admin Portal** (`http://localhost:3000/admin/`) and click **Go to Editor**.
+2. Click the **"+"** button to create a new draft. Type your Markdown content on the left, and see the live preview on the right.
+3. Your drafts are automatically saved to your browser's local storage.
+
+### Step 2: Add Frontmatter (Metadata)
+At the top of your markdown content, ensure you have standard Astro YAML frontmatter. This determines how your post is listed and how its images are optimized:
+
+```yaml
+---
+title: "Your Post Title Here"
+date: 2026-07-04
+description: "A short excerpt about the post for the summary cards."
+image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0" # Can be a URL or a local path
+draft: false
+tags: ["corporate", "strategy"]
+---
+
+Your markdown text goes here...
+```
+
+### Step 3: Publish to your site
+1. When you are ready to publish, click **Download .mdx File** or simply copy your Markdown code.
+2. In your project folder, go to `src/content/posts/` and create a new file ending in `.mdx` (e.g., `my-new-post.mdx`).
+3. Paste your content into this file and save it. 
+4. The post will immediately appear on your public site, and its featured image will be dynamically optimized by Astro's asset pipeline!
+
+---
+
+## 5. Secure Split Deployment Strategy
+
+This project ensures your drafts and admin portal remain strictly private.
+1. **Public Site (Home & Blog)**: Deployed automatically via GitHub Actions to GitHub Pages.
+2. **Admin Portal**: Runs *only* on your local machine. The automated build scripts explicitly delete the Admin Portal before generating the public files.
+
+---
+
+## 6. Automated Deployment via GitHub Pages
+
+To persist this project and publish the **Public Site** to the internet for free using GitHub Pages, follow these exact steps:
+
+**Step 1: Initialize Git**
+If you haven't already, run these commands in your terminal to track your files:
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+```
+
+**Step 2: Connect to GitHub**
+1. Log in to [GitHub](https://github.com/) and click the "+" icon in the top right to **Create a new repository**.
+2. Give it a name, choose "Public" or "Private", and click **Create repository** (do not add a README, .gitignore, or license yet).
+3. Copy the URL of your new repository.
+4. Run these commands in your terminal to link and upload your code:
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+git branch -M main
+git push -u origin main
+```
+
+**Step 3: Enable GitHub Pages**
+1. On your GitHub repository page, click **Settings** (top tab).
+2. Click **Pages** on the left sidebar.
+3. Under **Build and deployment**, set the **Source** dropdown to **GitHub Actions**.
+4. Your site will now build and deploy automatically. You can check the progress in the **Actions** tab.
+5. Once complete, GitHub will provide you with a live URL (e.g., `https://yourusername.github.io/yourrepo/`).
+
+*Note: The included GitHub workflow securely deletes the `/admin` route before publishing to ensure it is never exposed online.*
+
+---
+
+## 7. Manual Public Deployment (Optional)
+
+If you prefer to deploy to another static host (like Vercel, Netlify, AWS S3, or Nginx), we have provided automated build scripts that strip the Admin Portal and generate the public site files into a `dist/` folder.
+
+**Linux / macOS Manual Deployment:**
+Make the script executable and run it:
+```bash
+chmod +x deploy-linux.sh
+./deploy-linux.sh
+```
+
+**Windows Manual Deployment:**
+Open PowerShell as an Administrator and run:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+.\deploy-windows.ps1
+```
+
+Once the script finishes, simply upload the contents of the generated `dist/` folder to your web hosting provider.
+
+---
+
+## 8. Advanced Features (Search, RSS, Sitemaps)
+
+**Search Engine (Pagefind)**
+The integrated search runs seamlessly without any external database. 
+To test it locally, you must first build the site (since it relies on the built static HTML):
+```bash
+npm run build
+npm run preview
+```
+Open `http://localhost:3000` and test the search bar in the header!
+
+**RSS & Sitemaps**
+These are automatically generated at build-time.
+- RSS Feed: `/rss.xml`
+- Sitemap: `/sitemap-index.xml`
