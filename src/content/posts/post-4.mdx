@@ -1,0 +1,33 @@
+---
+title: "Building Dark Mode the Right Way"
+description: "A comprehensive guide to implementing a flicker-free dark mode toggle using Tailwind CSS and local storage."
+date: 2024-01-20
+image: "https://picsum.photos/seed/tech4/800/600"
+tags: ["CSS", "JavaScript", "UX"]
+draft: false
+---
+
+## The FOUC Problem
+
+One of the most annoying issues when implementing dark mode is the Flash of Unstyled Content (FOUC). This happens when the page initially loads in the default theme (usually light), and then abruptly switches to the dark theme once the JavaScript executes.
+
+## The Solution
+
+To prevent FOUC, you need to execute a small piece of JavaScript *before* the browser renders the page. This script should check the user's preference (either from local storage or their system settings) and apply the `dark` class to the `<html>` element immediately.
+
+### The Head Script
+
+Place this script in the `<head>` of your HTML document:
+
+```html
+<script is:inline>
+  const theme = localStorage.getItem('theme');
+  if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+</script>
+```
+
+This simple technique ensures a smooth, seamless experience for your users, regardless of their theme preference.

@@ -1,0 +1,6 @@
+{
+  "name": "Astro MDX Blog",
+  "description": "A beautiful, responsive, and animated MDX blog built with Astro, React, and Tailwind CSS.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

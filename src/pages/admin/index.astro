@@ -1,0 +1,28 @@
+---
+import AdminApp from '../../components/AdminApp';
+import { getCollection } from 'astro:content';
+import { siteConfig } from '../../../site.config';
+import ThemeManager from '../../components/ThemeManager.astro';
+import '../../styles/global.css';
+
+const allPosts = await getCollection('posts');
+const postsData = allPosts.map(post => ({
+  id: post.id,
+  title: post.data.title,
+  date: post.data.date,
+  draft: post.data.draft || false,
+}));
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Portal | {siteConfig.branding.logoText}</title>
+    <ThemeManager />
+  </head>
+  <body class="bg-white dark:bg-slate-950 font-sans text-slate-900 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
+    <AdminApp initialPosts={postsData} client:only="react" />
+  </body>
+</html>
+
