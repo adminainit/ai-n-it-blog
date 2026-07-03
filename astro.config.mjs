@@ -18,8 +18,22 @@ function configApiPlugin() {
           req.on('data', chunk => body += chunk);
           req.on('end', () => {
             try {
-              const { siteConfig, tailwindConfigColors } = JSON.parse(body);
+              const { siteConfig, tailwindConfigColors, logoImageBase64 } = JSON.parse(body);
               
+              if (logoImageBase64) {
+                const base64Data = logoImageBase64.replace(/^data:image\/\w+;base64,/, '');
+                const buffer = Buffer.from(base64Data, 'base64');
+                const publicDir = path.resolve('./public');
+                if (!fs.existsSync(publicDir)) {
+                  fs.mkdirSync(publicDir, { recursive: true });
+                }
+                const extMatch = logoImageBase64.match(/^data:image\/(\w+);base64,/);
+                const ext = extMatch ? extMatch[1] : 'png';
+                const logoFileName = `logo-custom.${ext}`;
+                fs.writeFileSync(path.join(publicDir, logoFileName), buffer);
+                siteConfig.branding.logoImage = `/${logoFileName}`;
+              }
+
               // Write site.config.js
               const siteConfigPath = path.resolve('./site.config.js');
               const siteContent = `export const siteConfig = ${JSON.stringify(siteConfig, null, 2)};\n`;

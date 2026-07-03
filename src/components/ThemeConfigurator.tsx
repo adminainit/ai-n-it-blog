@@ -7,11 +7,23 @@ export default function ThemeConfigurator() {
     title: siteConfig.title,
     description: siteConfig.description,
     logoText: siteConfig.branding.logoText,
+    logoImageBase64: '',
     primaryColor: siteConfig.theme?.hexColors?.primary || '#0f172a',
     secondaryColor: siteConfig.theme?.hexColors?.secondary || '#475569',
     accentColor: siteConfig.theme?.hexColors?.accent || '#3b82f6',
   });
   const [saving, setSaving] = useState(false);
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, logoImageBase64: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -41,6 +53,7 @@ export default function ThemeConfigurator() {
         },
         body: JSON.stringify({
           siteConfig: newSiteConfig,
+          logoImageBase64: formData.logoImageBase64,
           tailwindConfigColors: {
             primary: formData.primaryColor,
             secondary: formData.secondaryColor,
@@ -93,6 +106,17 @@ export default function ThemeConfigurator() {
               onChange={e => setFormData({...formData, logoText: e.target.value})}
               className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent outline-none"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Logo Image (Optional)</label>
+            <input 
+              type="file" 
+              accept="image/*"
+              onChange={handleLogoUpload}
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+            />
+            {formData.logoImageBase64 && <img src={formData.logoImageBase64} alt="Logo Preview" className="h-12 mt-2 object-contain" />}
           </div>
         </div>
 
