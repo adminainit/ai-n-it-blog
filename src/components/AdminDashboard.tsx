@@ -19,8 +19,7 @@ interface AdminDashboardProps {
   onEditPost?: (post: Post) => void;
 }
 
-export default function AdminDashboard({ posts: initialPosts, onEditPost }: AdminDashboardProps) {
-  const [posts, setPosts] = useState<Post[]>(initialPosts);
+export default function AdminDashboard({ posts, onEditPost, onDeletePost, syncStatus, isSyncing, syncToBackend, savePostLocal }: any) {
   const [activeTab, setActiveTab] = useState<'posts' | 'settings'>('posts');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [creationMode, setCreationMode] = useState<'choose' | 'write' | 'import'>('choose');
@@ -40,16 +39,12 @@ export default function AdminDashboard({ posts: initialPosts, onEditPost }: Admi
   };
 
   const toggleDraftStatus = (id: string) => {
-    setPosts(posts.map(post => 
-      post.id === id ? { ...post, draft: !post.draft } : post
-    ));
-    alert('Draft status toggled! Note: As this is a static site, you must also update the markdown frontmatter (draft: true/false) to apply this change permanently.');
+    alert('Please edit the post to change draft status.');
   };
 
   const deletePost = (id: string) => {
-    if (confirm('Are you sure you want to hide this post from the dashboard?')) {
-      setPosts(posts.filter(post => post.id !== id));
-      alert('Post removed from view! Note: You must manually delete the markdown file from src/content/posts/ to remove it permanently.');
+    if (confirm('Are you sure you want to delete this post?')) {
+      if (onDeletePost) onDeletePost(id);
     }
   };
 
@@ -106,29 +101,24 @@ export default function AdminDashboard({ posts: initialPosts, onEditPost }: Admi
     setIsSaving(true);
     try {
       const titleMatch = convertedMarkdown.match(/title:\s*"(.*?)"/);
-      // Determine filename: Use editingPostId if editing, otherwise slugify the title or use default
       let fileName = editingPostId || (titleMatch ? titleMatch[1].toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.mdx' : 'new-post.mdx');
       if (!fileName.endsWith('.mdx')) {
          fileName += '.mdx';
       }
       
-      const response = await fetch('/api/save-post', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ filename: fileName, content: convertedMarkdown }),
-      });
+      const newPost = {
+        id: fileName,
+        title: titleMatch ? titleMatch[1] : 'Untitled',
+        date: new Date().toISOString(),
+        draft: false,
+        rawContent: convertedMarkdown
+      };
       
-      if (!response.ok) {
-        throw new Error('Failed to save post');
-      }
-      
-      alert('Post saved successfully!');
+      if (savePostLocal) await savePostLocal(newPost);
+      if (syncToBackend) await syncToBackend(newPost);
+
+      alert('Post saved and synced successfully!');
       closeModal();
-      
-      // Optionally reload the page to show the new post
-      window.location.reload();
     } catch (err) {
       console.error(err);
       alert('An error occurred while saving the post.');
@@ -252,7 +242,12 @@ Write your markdown content here...
               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm"
             >
               <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">All Posts</h2>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-4">
+    All Posts
+    {isSyncing && <span className="text-sm text-indigo-500 font-bold flex items-center gap-2"><div className="w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div> Syncing...</span>}
+    {!isSyncing && syncStatus === 'success' && <span className="text-sm text-green-600 font-bold flex items-center gap-1">✓ Synced</span>}
+    {!isSyncing && syncStatus === 'error' && <span className="text-sm text-red-600 font-bold flex items-center gap-1">✗ Sync Failed</span>}
+  </h2>
                 <button 
                   onClick={() => setIsModalOpen(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors"

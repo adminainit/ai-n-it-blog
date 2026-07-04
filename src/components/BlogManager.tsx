@@ -1,84 +1,89 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-export interface DraftPost {
-  id: string;
-  title: string;
-  slug: string;
-  content: string; // Markdown content
-  date: string;
-}
+import React, { createContext, useContext, ReactNode } from 'react';
+import { usePostsSync } from '../hooks/usePostsSync';
+import { Post } from '../services/dbService';
 
 interface BlogManagerContextType {
-  drafts: DraftPost[];
-  addDraft: (draft: Omit<DraftPost, 'id' | 'date' | 'slug'> & { slug?: string }) => string;
-  updateDraft: (id: string, updates: Partial<DraftPost>) => void;
+  drafts: any[];
+  posts: Post[];
+  isSyncing: boolean;
+  syncStatus: string;
+  addDraft: (draft: any) => string;
+  updateDraft: (id: string, updates: any) => void;
   deleteDraft: (id: string) => void;
   deleteMultipleDrafts: (ids: string[]) => void;
   clearDrafts: () => void;
-  getDraft: (id: string) => DraftPost | undefined;
+  getDraft: (id: string) => any;
+  savePostLocal: (post: Post) => Promise<Post>;
+  syncToBackend: (post: Post) => Promise<void>;
+  deletePostLocal: (id: string) => Promise<void>;
 }
 
 const BlogManagerContext = createContext<BlogManagerContextType | undefined>(undefined);
 
-export function BlogManagerProvider({ children }: { children: ReactNode }) {
-  const [drafts, setDrafts] = useState<DraftPost[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
+export function BlogManagerProvider({ children, initialPosts = [] }: { children: ReactNode, initialPosts?: Post[] }) {
+  const { posts, isSyncing, syncStatus, savePostLocal, syncToBackend, deletePostLocal } = usePostsSync(initialPosts);
 
-  useEffect(() => {
-    // Load drafts from local storage on mount
-    const savedDrafts = localStorage.getItem('blog_drafts');
-    if (savedDrafts) {
-      try {
-        setDrafts(JSON.parse(savedDrafts));
-      } catch (e) {
-        console.error('Failed to parse saved drafts', e);
-      }
-    }
-    setIsLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    // Save drafts to local storage whenever they change
-    if (isLoaded) {
-      localStorage.setItem('blog_drafts', JSON.stringify(drafts));
-    }
-  }, [drafts, isLoaded]);
-
-  const addDraft = (draft: Omit<DraftPost, 'id' | 'date' | 'slug'> & { slug?: string }) => {
-    const newDraft: DraftPost = {
-      ...draft,
-      slug: draft.slug || draft.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-      id: crypto.randomUUID(),
-      date: new Date().toISOString(),
+  const addDraft = (draft: any) => {
+    const newId = draft.id || draft.slug || draft.title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || crypto.randomUUID();
+    const newDraft = {
+      id: newId,
+      title: draft.title || 'Untitled',
+      date: draft.date || new Date().toISOString(),
+      draft: true,
+      rawContent: draft.content || draft.rawContent || '',
+      synced: false,
+      ...draft
     };
-    setDrafts((prev) => [newDraft, ...prev]);
+    savePostLocal(newDraft);
     return newDraft.id;
   };
 
-  const updateDraft = (id: string, updates: Partial<DraftPost>) => {
-    setDrafts((prev) =>
-      prev.map((draft) => (draft.id === id ? { ...draft, ...updates } : draft))
-    );
+  const updateDraft = (id: string, updates: any) => {
+    const existing = posts.find(p => p.id === id);
+    if (existing) {
+      if (updates.content !== undefined) {
+        updates.rawContent = updates.content;
+      }
+      savePostLocal({ ...existing, ...updates, synced: false });
+    }
   };
 
   const deleteDraft = (id: string) => {
-    setDrafts((prev) => prev.filter((draft) => draft.id !== id));
+    deletePostLocal(id);
   };
 
   const deleteMultipleDrafts = (ids: string[]) => {
-    setDrafts((prev) => prev.filter((draft) => !ids.includes(draft.id)));
+    ids.forEach(id => deletePostLocal(id));
   };
 
   const clearDrafts = () => {
-    setDrafts([]);
+    posts.forEach(p => deletePostLocal(p.id));
   };
 
   const getDraft = (id: string) => {
-    return drafts.find((draft) => draft.id === id);
+    const p = posts.find((draft) => draft.id === id);
+    if (p) {
+      return { ...p, content: p.rawContent, slug: p.id };
+    }
+    return undefined;
   };
 
   return (
-    <BlogManagerContext.Provider value={{ drafts, addDraft, updateDraft, deleteDraft, deleteMultipleDrafts, clearDrafts, getDraft }}>
+    <BlogManagerContext.Provider value={{ 
+      drafts: posts.filter(p => p.draft).map(p => ({ ...p, content: p.rawContent, slug: p.id })), 
+      posts, 
+      isSyncing, 
+      syncStatus,
+      addDraft, 
+      updateDraft, 
+      deleteDraft, 
+      deleteMultipleDrafts, 
+      clearDrafts, 
+      getDraft,
+      savePostLocal,
+      syncToBackend,
+      deletePostLocal
+    }}>
       {children}
     </BlogManagerContext.Provider>
   );

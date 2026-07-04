@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { siteConfig } from '../../site.config';
-import { BlogManagerProvider } from './BlogManager';
+
 import ThemeToggle from './ThemeToggle';
 
 function Header() {
@@ -65,7 +65,7 @@ function Footer() {
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <BlogManagerProvider>
+    
       <div className="min-h-screen flex flex-col font-sans bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100">
         <Header />
         <main className="flex-grow flex flex-col">
@@ -73,6 +73,6 @@ export default function Layout({ children }: { children: ReactNode }) {
         </main>
         <Footer />
       </div>
-    </BlogManagerProvider>
+    
   );
 }

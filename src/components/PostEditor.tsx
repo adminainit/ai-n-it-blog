@@ -17,7 +17,7 @@ interface PostEditorProps {
 }
 
 export default function PostEditor({ initialPost }: PostEditorProps = {}) {
-  const { drafts, addDraft, updateDraft, deleteDraft, deleteMultipleDrafts, clearDrafts } = useBlogManager();
+  const { drafts, addDraft, updateDraft, deleteDraft, deleteMultipleDrafts, clearDrafts, syncToBackend, savePostLocal } = useBlogManager();
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'split' | 'edit' | 'preview'>('split');
   const [isSaving, setIsSaving] = useState(false);
@@ -134,23 +134,23 @@ export default function PostEditor({ initialPost }: PostEditorProps = {}) {
     try {
       let fileName = `${activeDraft.slug || 'new-post'}.mdx`;
       
-      const response = await fetch('/api/save-post', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ filename: fileName, content: activeDraft.content }),
-      });
+      const newPost = {
+        id: fileName,
+        title: activeDraft.title || 'Untitled',
+        date: activeDraft.date || new Date().toISOString(),
+        draft: false,
+        rawContent: activeDraft.content
+      };
       
-      if (!response.ok) {
-        throw new Error('Failed to save post');
-      }
+      if (savePostLocal) await savePostLocal(newPost);
+      if (syncToBackend) await syncToBackend(newPost);
       
-      // Post saved successfully
-      // Optionally reload the page to show the new post
-      window.location.reload();
+      // Keep it in drafts but updated
+      updateDraft(activeDraft.id, { title: newPost.title, content: newPost.rawContent });
+      alert('File saved and synced successfully!');
     } catch (err) {
       console.error(err);
+      alert('An error occurred while saving the post.');
     } finally {
       setIsSaving(false);
     }

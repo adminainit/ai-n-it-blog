@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { BlogManagerProvider, useBlogManager } from './BlogManager';
 import { motion, AnimatePresence } from 'framer-motion';
 import Layout from './Layout';
 import AdminDashboard from './AdminDashboard';
@@ -17,7 +18,8 @@ interface AdminAppProps {
   initialPosts: Post[];
 }
 
-export default function AdminApp({ initialPosts }: AdminAppProps) {
+function AdminAppContent() {
+  const { posts, isSyncing, syncStatus, savePostLocal, syncToBackend, deletePostLocal } = useBlogManager();
   const [view, setView] = useState<'dashboard' | 'editor'>('dashboard');
   const [editingPost, setEditingPost] = useState<Post | null>(null);
 
@@ -61,7 +63,15 @@ export default function AdminApp({ initialPosts }: AdminAppProps) {
                 </button>
               </header>
 
-              <AdminDashboard posts={initialPosts} onEditPost={handleEditPost} />
+              <AdminDashboard 
+    posts={posts} 
+    onEditPost={handleEditPost}
+    onDeletePost={deletePostLocal}
+    syncStatus={syncStatus}
+    isSyncing={isSyncing}
+    syncToBackend={syncToBackend}
+    savePostLocal={savePostLocal}
+  />
             </div>
           </motion.div>
         ) : (
@@ -85,10 +95,23 @@ export default function AdminApp({ initialPosts }: AdminAppProps) {
                 Back to Dashboard
               </button>
             </div>
-            <PostEditor initialPost={editingPost} />
+            <PostEditor 
+    initialPost={editingPost} 
+    savePostLocal={savePostLocal}
+    syncToBackend={syncToBackend}
+  />
           </motion.div>
         )}
       </AnimatePresence>
     </Layout>
+  );
+}
+
+
+export default function AdminApp({ initialPosts }: AdminAppProps) {
+  return (
+    <BlogManagerProvider initialPosts={initialPosts}>
+      <AdminAppContent />
+    </BlogManagerProvider>
   );
 }
