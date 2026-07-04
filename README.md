@@ -199,3 +199,28 @@ Open `http://localhost:3000` and test the search bar in the header!
 These are automatically generated at build-time.
 - RSS Feed: `/rss.xml`
 - Sitemap: `/sitemap-index.xml`
+
+---
+
+## 9. Force Syncing from GitHub (Discard Local Changes)
+
+If you have made edits on GitHub directly (or pushed from another machine) and you want your local machine to exactly match the GitHub repository while **discarding any local uncommitted changes**, we have provided automated synchronization scripts.
+
+**Warning: This will permanently delete any local files or changes that have not been committed and pushed to GitHub.**
+
+**Linux / macOS Sync:**
+Make the script executable and run it:
+```bash
+chmod +x sync-from-github.sh
+./sync-from-github.sh
+```
+
+**Windows Sync:**
+Open PowerShell and run:
+```powershell
+.\sync-from-github.ps1
+```
+
+*(Note: If you receive a "running scripts is disabled on this system" error, run this command first: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` and type `Y` to confirm. Then run the script again.)*
+
+This script safely fetches the latest code and uses a "hard reset" to force the machine's state to match the GitHub version one-way.
