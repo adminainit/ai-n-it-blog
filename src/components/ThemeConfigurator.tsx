@@ -110,13 +110,16 @@ export default function ThemeConfigurator() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Logo Image (Optional)</label>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              <strong>SVG Guidelines:</strong> Ensure your SVG has a valid <code>viewBox</code> attribute and no hardcoded <code>width/height</code> attributes so it can scale properly. We recommend a square or horizontal aspect ratio.
+            </p>
             <input 
               type="file" 
-              accept="image/*"
+              accept="image/*,.svg"
               onChange={handleLogoUpload}
               className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-accent outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
             />
-            {formData.logoImageBase64 && <img src={formData.logoImageBase64} alt="Logo Preview" className="h-12 mt-2 object-contain" />}
+            {formData.logoImageBase64 && <img src={formData.logoImageBase64} alt="Logo Preview" className="max-h-12 w-auto mt-4 object-contain" />}
           </div>
         </div>
 

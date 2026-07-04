@@ -8,7 +8,7 @@ import Search from 'astro-pagefind/components/Search.astro';
   <div class="flex items-center gap-2">
     <a href="/" class="flex items-center gap-2 text-xl font-extrabold tracking-tighter text-slate-900 dark:text-white transition-all duration-300 hover:text-indigo-600 dark:hover:text-indigo-400">
       {siteConfig.branding?.logoImage ? (
-        <img src={siteConfig.branding.logoImage} alt="Logo" class="h-8 w-auto object-contain" />
+        <img src={siteConfig.branding.logoImage} alt="Logo" class="max-h-12 max-w-[200px] w-auto object-contain" />
       ) : (
         <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0">
           <div class="w-4 h-4 border-2 border-white rotate-45"></div>

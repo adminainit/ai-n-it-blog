@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit3, Trash2, Plus, Settings, Eye, FileText, Upload, X, Palette } from 'lucide-react';
+import { Edit3, Trash2, Plus, Settings, Eye, FileText, Upload, X, Palette, Bold, Italic, Link as LinkIcon, Save } from 'lucide-react';
 import { siteConfig } from '../../site.config';
 import mammoth from 'mammoth';
 import TurndownService from 'turndown';
@@ -11,20 +11,25 @@ interface Post {
   title: string;
   date: string;
   draft: boolean;
+  rawContent?: string;
 }
 
 interface AdminDashboardProps {
   posts: Post[];
+  onEditPost?: (post: Post) => void;
 }
 
-export default function AdminDashboard({ posts: initialPosts }: AdminDashboardProps) {
+export default function AdminDashboard({ posts: initialPosts, onEditPost }: AdminDashboardProps) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [activeTab, setActiveTab] = useState<'posts' | 'settings'>('posts');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [creationMode, setCreationMode] = useState<'choose' | 'write' | 'import'>('choose');
   const [isConverting, setIsConverting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [convertedMarkdown, setConvertedMarkdown] = useState('');
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -45,6 +50,90 @@ export default function AdminDashboard({ posts: initialPosts }: AdminDashboardPr
     if (confirm('Are you sure you want to hide this post from the dashboard?')) {
       setPosts(posts.filter(post => post.id !== id));
       alert('Post removed from view! Note: You must manually delete the markdown file from src/content/posts/ to remove it permanently.');
+    }
+  };
+
+  const editPost = (post: Post) => {
+    if (onEditPost) {
+      onEditPost(post);
+    } else {
+      setEditingPostId(post.id);
+      setConvertedMarkdown(post.rawContent || '');
+      setCreationMode('write');
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleFormat = (type: 'bold' | 'italic' | 'link') => {
+    if (!textareaRef.current) return;
+    
+    const start = textareaRef.current.selectionStart;
+    const end = textareaRef.current.selectionEnd;
+    const text = convertedMarkdown;
+    const selected = text.substring(start, end);
+    let inserted = '';
+    
+    if (type === 'bold') {
+      inserted = `**${selected || 'bold text'}**`;
+    } else if (type === 'italic') {
+      inserted = `*${selected || 'italic text'}*`;
+    } else if (type === 'link') {
+      inserted = `[${selected || 'link text'}](url)`;
+    }
+    
+    const newContent = text.substring(0, start) + inserted + text.substring(end);
+    setConvertedMarkdown(newContent);
+    
+    // Focus back and set selection
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        const newPos = start + inserted.length;
+        if (!selected && type === 'link') {
+          // select "url"
+          textareaRef.current.setSelectionRange(start + inserted.length - 4, start + inserted.length - 1);
+        } else if (!selected) {
+           textareaRef.current.setSelectionRange(start + 2, start + inserted.length - 2);
+        } else {
+          textareaRef.current.setSelectionRange(newPos, newPos);
+        }
+      }
+    }, 10);
+  };
+
+  const handleSavePost = async () => {
+    if (!convertedMarkdown) return;
+    setIsSaving(true);
+    try {
+      const titleMatch = convertedMarkdown.match(/title:\s*"(.*?)"/);
+      // Determine filename: Use editingPostId if editing, otherwise slugify the title or use default
+      let fileName = editingPostId || (titleMatch ? titleMatch[1].toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.mdx' : 'new-post.mdx');
+      if (!fileName.endsWith('.mdx')) {
+         fileName += '.mdx';
+      }
+      
+      const response = await fetch('/api/save-post', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ filename: fileName, content: convertedMarkdown }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save post');
+      }
+      
+      alert('Post saved successfully!');
+      closeModal();
+      
+      // Optionally reload the page to show the new post
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred while saving the post.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -111,6 +200,7 @@ Write your markdown content here...
     setIsModalOpen(false);
     setCreationMode('choose');
     setConvertedMarkdown('');
+    setEditingPostId(null);
   };
 
   return (
@@ -138,21 +228,39 @@ Write your markdown content here...
       {/* Main Content Area */}
       <div className="flex-grow">
         {activeTab === 'posts' && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm"
-          >
-            <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">All Posts</h2>
-              <button 
-                onClick={() => setIsModalOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors"
-              >
-                <Plus size={16} />
-                New Post
-              </button>
-            </div>
+          <div className="flex flex-col gap-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl p-5"
+            >
+              <h3 className="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-2 mb-2">
+                <FileText size={18} />
+                How to manage posts
+              </h3>
+              <ul className="text-sm text-indigo-800 dark:text-indigo-400 space-y-1 ml-6 list-disc">
+                <li><strong>Drafts vs. Posts:</strong> The editor saves drafts automatically to your browser storage. These are invisible to the website until saved as a post file.</li>
+                <li><strong>Save:</strong> Click the "Save File" button in the editor. This converts your draft into a `.mdx` file in the <code>src/content/posts/</code> folder on the server.</li>
+                <li><strong>Publish:</strong> Once saved to the server, ensure <code>draft: false</code> is set in the top frontmatter of the file to make it public on the website.</li>
+                <li><strong>Build:</strong> The application may need a re-build (or will hot-reload in dev) to see newly published posts online.</li>
+              </ul>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm"
+            >
+              <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">All Posts</h2>
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors"
+                >
+                  <Plus size={16} />
+                  New Post
+                </button>
+              </div>
             
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -181,10 +289,7 @@ Write your markdown content here...
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <button className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="View">
-                            <Eye size={16} />
-                          </button>
-                          <button onClick={() => toggleDraftStatus(post.id)} className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Toggle Draft">
+                          <button onClick={() => editPost(post)} className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Edit Post">
                             <Edit3 size={16} />
                           </button>
                           <button onClick={() => deletePost(post.id)} className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete">
@@ -205,6 +310,7 @@ Write your markdown content here...
               </table>
             </div>
           </motion.div>
+          </div>
         )}
 
         {activeTab === 'settings' && (
@@ -234,8 +340,8 @@ Write your markdown content here...
             >
               <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
                 <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Plus size={18} />
-                  Create New Post
+                  <Edit3 size={18} />
+                  {creationMode === 'choose' ? 'Create New Post' : 'Edit Post'}
                 </h3>
                 <button 
                   onClick={closeModal}
@@ -307,22 +413,46 @@ Write your markdown content here...
                 
                 {creationMode === 'write' && (
                   <div className="flex flex-col gap-2 h-full min-h-[400px]">
-                    <div className="flex justify-between items-center">
-                      <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Markdown Editor</label>
+                    <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-800 p-2 rounded-t-lg border-b border-slate-200 dark:border-slate-700">
+                      <div className="flex items-center gap-1">
+                        <button 
+                          onClick={() => handleFormat('bold')}
+                          className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+                          title="Bold"
+                        >
+                          <Bold size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleFormat('italic')}
+                          className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+                          title="Italic"
+                        >
+                          <Italic size={16} />
+                        </button>
+                        <button 
+                          onClick={() => handleFormat('link')}
+                          className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+                          title="Link"
+                        >
+                          <LinkIcon size={16} />
+                        </button>
+                      </div>
                       <button 
                         onClick={() => navigator.clipboard.writeText(convertedMarkdown)}
-                        className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
+                        className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors mr-2"
                       >
                         Copy to Clipboard
                       </button>
                     </div>
                     <textarea 
+                      ref={textareaRef}
                       value={convertedMarkdown}
                       onChange={(e) => setConvertedMarkdown(e.target.value)}
-                      className="w-full flex-grow px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-100 text-sm font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none"
+                      className="w-full flex-grow px-4 py-3 rounded-b-lg border border-t-0 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 text-sm font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors resize-none"
+                      placeholder="Write your markdown here..."
                     />
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
-                      Review and edit your markdown. Once ready, download the .mdx file and save it in your `src/content/posts/` directory.
+                      Review and edit your markdown. Click "Save & Publish" to update the site.
                     </p>
                   </div>
                 )}
@@ -337,21 +467,16 @@ Write your markdown content here...
                 </button>
                 {creationMode === 'write' && convertedMarkdown && (
                   <button 
-                    onClick={() => {
-                      const element = document.createElement("a");
-                      const file = new Blob([convertedMarkdown], {type: 'text/markdown'});
-                      element.href = URL.createObjectURL(file);
-                      // try to extract title from frontmatter
-                      const titleMatch = convertedMarkdown.match(/title:\s*"(.*?)"/);
-                      const fileName = titleMatch ? titleMatch[1].toLowerCase().replace(/\s+/g, '-') + '.mdx' : 'new-post.mdx';
-                      element.download = fileName;
-                      document.body.appendChild(element);
-                      element.click();
-                      document.body.removeChild(element);
-                    }}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-sm shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-colors"
+                    onClick={handleSavePost}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-sm shadow-indigo-200 dark:shadow-none hover:bg-indigo-700 transition-colors disabled:opacity-50"
                   >
-                    Download .mdx File
+                    {isSaving ? (
+                       <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    ) : (
+                       <Save size={16} />
+                    )}
+                    {isSaving ? 'Saving...' : 'Save Post'}
                   </button>
                 )}
               </div>

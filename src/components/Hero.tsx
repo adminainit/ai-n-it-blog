@@ -56,14 +56,6 @@ export default function Hero() {
           >
             Read the Blog
           </a>
-          <a 
-            href={siteConfig.socialLinks.find(link => link.name === 'GitHub')?.url || 'https://github.com'} 
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-sm font-bold transition-all w-full sm:w-auto text-center"
-          >
-            View Source
-          </a>
         </motion.div>
       </motion.div>
     </section>

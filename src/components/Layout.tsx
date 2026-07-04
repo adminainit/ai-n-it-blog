@@ -8,7 +8,7 @@ function Header() {
     <header className="h-16 flex items-center justify-between px-4 md:px-10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-200">
       <div className="flex items-center gap-3">
         {siteConfig.branding.logoImage ? (
-          <img src={siteConfig.branding.logoImage} alt="Logo" className="h-8 w-auto" />
+          <img src={siteConfig.branding.logoImage} alt="Logo" className="max-h-12 max-w-[200px] w-auto object-contain" />
         ) : (
           <div className="w-8 h-8 bg-accent rounded-sm flex items-center justify-center font-display font-bold text-lg text-white">
             {siteConfig.branding.logoText.charAt(0)}

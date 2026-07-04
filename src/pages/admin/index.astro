@@ -4,14 +4,30 @@ import { getCollection } from 'astro:content';
 import { siteConfig } from '../../../site.config';
 import ThemeManager from '../../components/ThemeManager.astro';
 import '../../styles/global.css';
+import fs from 'fs';
+import path from 'path';
 
 const allPosts = await getCollection('posts');
-const postsData = allPosts.map(post => ({
-  id: post.id,
-  title: post.data.title,
-  date: post.data.date,
-  draft: post.data.draft || false,
-}));
+const postsData = allPosts.map(post => {
+  let filePath = path.join(process.cwd(), 'src/content/posts', post.id);
+  
+  if (!fs.existsSync(filePath)) {
+    if (fs.existsSync(filePath + '.mdx')) {
+      filePath = filePath + '.mdx';
+    } else if (fs.existsSync(filePath + '.md')) {
+      filePath = filePath + '.md';
+    }
+  }
+
+  const rawContent = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf-8') : '';
+  return {
+    id: post.id,
+    title: post.data.title,
+    date: post.data.date,
+    draft: post.data.draft || false,
+    rawContent
+  };
+});
 ---
 <!DOCTYPE html>
 <html lang="en">

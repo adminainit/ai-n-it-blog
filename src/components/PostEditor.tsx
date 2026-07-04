@@ -2,19 +2,56 @@ import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useBlogManager } from './BlogManager';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit3, Eye, Layout } from 'lucide-react';
+import { Edit3, Eye, Layout, Bold, Italic, Link as LinkIcon, Save } from 'lucide-react';
 
-export default function PostEditor() {
-  const { drafts, addDraft, updateDraft, deleteDraft } = useBlogManager();
+interface Post {
+  id: string;
+  title: string;
+  date: string;
+  draft: boolean;
+  rawContent?: string;
+}
+
+interface PostEditorProps {
+  initialPost?: Post | null;
+}
+
+export default function PostEditor({ initialPost }: PostEditorProps = {}) {
+  const { drafts, addDraft, updateDraft, deleteDraft, deleteMultipleDrafts, clearDrafts } = useBlogManager();
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'split' | 'edit' | 'preview'>('split');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isManageMode, setIsManageMode] = useState(false);
+  const [selectedDrafts, setSelectedDrafts] = useState<Set<string>>(new Set());
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
   
-  // Create a new draft on initial load if none exist
+  const initializedPostIdRef = React.useRef<string | null>(null);
+
+  // Create a new draft on initial load if none exist or when initialPost changes
   useEffect(() => {
-    if (drafts.length === 0) {
-      addDraft({ title: 'New Post', slug: 'new-post', content: '# Welcome to the Editor\n\nStart typing here...' });
+    if (initialPost && initializedPostIdRef.current !== initialPost.id) {
+      initializedPostIdRef.current = initialPost.id;
+      
+      const expectedSlug = initialPost.id.replace(/\.mdx?$/, '');
+      const existingDraft = drafts.find(d => d.slug === expectedSlug);
+      
+      if (existingDraft) {
+        setActiveDraftId(existingDraft.id);
+      } else {
+        const newDraftId = addDraft({
+          title: initialPost.title,
+          slug: expectedSlug,
+          content: initialPost.rawContent || '',
+        });
+        setActiveDraftId(newDraftId);
+      }
+    } else if (!initialPost && drafts.length === 0 && initializedPostIdRef.current !== 'empty') {
+      initializedPostIdRef.current = 'empty';
+      const newDraftId = addDraft({ title: 'New Post', slug: 'new-post', content: '# Welcome to the Editor\n\nStart typing here...' });
+      setActiveDraftId(newDraftId);
     }
-  }, [drafts.length, addDraft]);
+  }, [initialPost, drafts, addDraft]);
 
   // Set the first draft as active if none is selected
   useEffect(() => {
@@ -55,6 +92,98 @@ export default function PostEditor() {
     addDraft({ title: 'Untitled Draft', slug: 'untitled-draft', content: '' });
   };
 
+  const handleFormat = (type: 'bold' | 'italic' | 'link') => {
+    if (!textareaRef.current) return;
+    
+    const start = textareaRef.current.selectionStart;
+    const end = textareaRef.current.selectionEnd;
+    const text = activeDraft.content;
+    const selected = text.substring(start, end);
+    let inserted = '';
+    
+    if (type === 'bold') {
+      inserted = `**${selected || 'bold text'}**`;
+    } else if (type === 'italic') {
+      inserted = `*${selected || 'italic text'}*`;
+    } else if (type === 'link') {
+      inserted = `[${selected || 'link text'}](url)`;
+    }
+    
+    const newContent = text.substring(0, start) + inserted + text.substring(end);
+    updateDraft(activeDraft.id, { content: newContent });
+    
+    // Focus back and set selection
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        const newPos = start + inserted.length;
+        if (!selected && type === 'link') {
+          textareaRef.current.setSelectionRange(start + inserted.length - 4, start + inserted.length - 1);
+        } else if (!selected) {
+           textareaRef.current.setSelectionRange(start + 2, start + inserted.length - 2);
+        } else {
+          textareaRef.current.setSelectionRange(newPos, newPos);
+        }
+      }
+    }, 10);
+  };
+
+  const handleSavePost = async () => {
+    if (!activeDraft) return;
+    setIsSaving(true);
+    try {
+      let fileName = `${activeDraft.slug || 'new-post'}.mdx`;
+      
+      const response = await fetch('/api/save-post', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ filename: fileName, content: activeDraft.content }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save post');
+      }
+      
+      // Post saved successfully
+      // Optionally reload the page to show the new post
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedDrafts.size === 0) return;
+    deleteMultipleDrafts(Array.from(selectedDrafts));
+    setSelectedDrafts(new Set());
+    setIsManageMode(false);
+    if (activeDraftId && selectedDrafts.has(activeDraftId)) {
+      setActiveDraftId(null);
+    }
+  };
+
+  const handleClearAll = () => {
+    clearDrafts();
+    setSelectedDrafts(new Set());
+    setIsManageMode(false);
+    setActiveDraftId(null);
+  };
+
+  const toggleDraftSelection = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newSelection = new Set(selectedDrafts);
+    if (newSelection.has(id)) {
+      newSelection.delete(id);
+    } else {
+      newSelection.add(id);
+    }
+    setSelectedDrafts(newSelection);
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -63,16 +192,68 @@ export default function PostEditor() {
       className="flex h-[calc(100vh-64px)] overflow-hidden"
     >
       {/* Sidebar for drafts list */}
-      <div className="w-64 border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 overflow-y-auto flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm sticky top-0">
-          <h2 className="font-display font-bold text-xs tracking-widest uppercase text-slate-500">Drafts</h2>
-          <button 
-            onClick={handleCreateNew}
-            className="text-accent hover:text-blue-700 w-8 h-8 flex items-center justify-center text-lg font-bold rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          >
-            +
-          </button>
+      <div className="w-72 border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 overflow-y-auto flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex flex-col gap-3 bg-white/80 dark:bg-slate-950/80 backdrop-blur-sm sticky top-0">
+          <div className="flex justify-between items-center">
+            <h2 className="font-display font-bold text-xs tracking-widest uppercase text-slate-500">Drafts</h2>
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => setIsManageMode(!isManageMode)}
+                className={`text-xs font-bold px-2 py-1 rounded transition-colors ${isManageMode ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800'}`}
+              >
+                {isManageMode ? 'Done' : 'Manage'}
+              </button>
+              <button 
+                onClick={handleCreateNew}
+                className="text-accent hover:text-blue-700 w-7 h-7 flex items-center justify-center text-lg font-bold rounded hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+                title="New Draft"
+              >
+                +
+              </button>
+            </div>
+          </div>
+          
+          {/* Management Controls */}
+          <AnimatePresence>
+            {isManageMode && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="flex flex-col gap-2 overflow-hidden"
+              >
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      if (selectedDrafts.size === drafts.length) {
+                        setSelectedDrafts(new Set());
+                      } else {
+                        setSelectedDrafts(new Set(drafts.map(d => d.id)));
+                      }
+                    }}
+                    className="flex-1 text-xs px-2 py-1.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded transition-colors"
+                  >
+                    {selectedDrafts.size === drafts.length ? 'Deselect All' : 'Select All'}
+                  </button>
+                  <button
+                    onClick={handleDeleteSelected}
+                    disabled={selectedDrafts.size === 0}
+                    className="flex-1 text-xs px-2 py-1.5 bg-red-100 hover:bg-red-200 dark:bg-red-900/40 dark:hover:bg-red-900/60 text-red-700 dark:text-red-300 rounded transition-colors disabled:opacity-50"
+                  >
+                    Delete ({selectedDrafts.size})
+                  </button>
+                </div>
+                <button
+                  onClick={handleClearAll}
+                  className="w-full text-xs px-2 py-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                >
+                  Clear All Drafts
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
+
         <div className="flex-1 p-3 space-y-2">
           <AnimatePresence>
             {drafts.map((draft, index) => (
@@ -82,9 +263,25 @@ export default function PostEditor() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.2, delay: index * 0.03 }}
-                className={`p-3 rounded-xl cursor-pointer group flex justify-between items-center transition-all duration-200 shadow-sm ${activeDraftId === draft.id ? 'bg-primary text-white shadow-md' : 'bg-white dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 border border-transparent dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600'}`}
-                onClick={() => setActiveDraftId(draft.id)}
+                className={`p-3 rounded-xl cursor-pointer group flex items-center gap-3 transition-all duration-200 shadow-sm ${activeDraftId === draft.id ? 'bg-primary text-white shadow-md' : 'bg-white dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 border border-transparent dark:border-slate-700/50 hover:border-slate-300 dark:hover:border-slate-600'}`}
+                onClick={() => {
+                  if (isManageMode) {
+                    toggleDraftSelection(draft.id, { stopPropagation: () => {} } as any);
+                  } else {
+                    setActiveDraftId(draft.id);
+                  }
+                }}
               >
+                {isManageMode && (
+                  <div className="flex-shrink-0" onClick={(e) => toggleDraftSelection(draft.id, e)}>
+                    <input 
+                      type="checkbox" 
+                      checked={selectedDrafts.has(draft.id)} 
+                      onChange={() => {}}
+                      className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0 pr-2">
                   <div className="truncate text-sm font-bold">
                     {draft.title || 'Untitled'}
@@ -93,17 +290,19 @@ export default function PostEditor() {
                     {new Date(draft.date).toLocaleDateString()}
                   </div>
                 </div>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteDraft(draft.id);
-                    if (activeDraftId === draft.id) setActiveDraftId(null);
-                  }}
-                  className={`opacity-0 group-hover:opacity-100 flex-shrink-0 p-1.5 rounded-md text-xs transition-opacity ${activeDraftId === draft.id ? 'text-primary-100 hover:text-white hover:bg-primary-600' : 'text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
-                  title="Delete Draft"
-                >
-                  ×
-                </button>
+                {!isManageMode && (
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteDraft(draft.id);
+                      if (activeDraftId === draft.id) setActiveDraftId(null);
+                    }}
+                    className={`opacity-0 group-hover:opacity-100 flex-shrink-0 p-1.5 rounded-md text-xs transition-opacity ${activeDraftId === draft.id ? 'text-primary-100 hover:text-white hover:bg-primary-600' : 'text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20'}`}
+                    title="Delete Draft"
+                  >
+                    ×
+                  </button>
+                )}
               </motion.div>
             ))}
           </AnimatePresence>
@@ -175,12 +374,50 @@ export default function PostEditor() {
           <div className="flex-1 flex flex-col md:flex-row min-h-0 bg-slate-50/50 dark:bg-slate-950">
             {/* Editor */}
             {(viewMode === 'edit' || viewMode === 'split') && (
-              <div className={`flex-1 border-b md:border-b-0 ${viewMode === 'split' ? 'md:border-r border-slate-200 dark:border-slate-800' : ''} p-6`}>
+              <div className={`flex-1 flex flex-col border-b md:border-b-0 ${viewMode === 'split' ? 'md:border-r border-slate-200 dark:border-slate-800' : ''}`}>
+                <div className="flex justify-between items-center bg-slate-100 dark:bg-slate-800/50 p-2 border-b border-slate-200 dark:border-slate-800">
+                  <div className="flex items-center gap-1">
+                    <button 
+                      onClick={() => handleFormat('bold')}
+                      className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+                      title="Bold"
+                    >
+                      <Bold size={16} />
+                    </button>
+                    <button 
+                      onClick={() => handleFormat('italic')}
+                      className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+                      title="Italic"
+                    >
+                      <Italic size={16} />
+                    </button>
+                    <button 
+                      onClick={() => handleFormat('link')}
+                      className="p-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+                      title="Link"
+                    >
+                      <LinkIcon size={16} />
+                    </button>
+                  </div>
+                  <button 
+                    onClick={handleSavePost}
+                    disabled={isSaving}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-indigo-600 text-white rounded-md text-xs font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                  >
+                    {isSaving ? (
+                       <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    ) : (
+                       <Save size={14} />
+                    )}
+                    {isSaving ? 'Saving...' : 'Save File'}
+                  </button>
+                </div>
                 <textarea
+                  ref={textareaRef}
                   value={activeDraft.content}
                   onChange={handleContentChange}
                   placeholder="Start writing in Markdown..."
-                  className="w-full h-full resize-none bg-transparent outline-none font-mono text-sm leading-relaxed text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                  className="w-full flex-grow resize-none bg-transparent outline-none font-mono text-sm leading-relaxed text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 p-6"
                 />
               </div>
             )}

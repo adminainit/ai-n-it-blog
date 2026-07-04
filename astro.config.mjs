@@ -21,14 +21,15 @@ function configApiPlugin() {
               const { siteConfig, tailwindConfigColors, logoImageBase64 } = JSON.parse(body);
               
               if (logoImageBase64) {
-                const base64Data = logoImageBase64.replace(/^data:image\/\w+;base64,/, '');
+                const base64Data = logoImageBase64.replace(/^data:image\/[^;]+;base64,/, '');
                 const buffer = Buffer.from(base64Data, 'base64');
                 const publicDir = path.resolve('./public');
                 if (!fs.existsSync(publicDir)) {
                   fs.mkdirSync(publicDir, { recursive: true });
                 }
-                const extMatch = logoImageBase64.match(/^data:image\/(\w+);base64,/);
-                const ext = extMatch ? extMatch[1] : 'png';
+                const extMatch = logoImageBase64.match(/^data:image\/([^;]+);base64,/);
+                let ext = extMatch ? extMatch[1] : 'png';
+                if (ext === 'svg+xml') ext = 'svg';
                 const logoFileName = `logo-custom.${ext}`;
                 fs.writeFileSync(path.join(publicDir, logoFileName), buffer);
                 siteConfig.branding.logoImage = `/${logoFileName}`;
@@ -65,6 +66,25 @@ function configApiPlugin() {
                 fs.writeFileSync(tailwindPath, twContent);
               }
               
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: true }));
+            } catch(e) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: e.message }));
+            }
+          });
+
+        } else if (req.url === '/api/save-post' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => body += chunk);
+          req.on('end', () => {
+            try {
+              const { filename, content } = JSON.parse(body);
+              const postsDir = path.resolve('./src/content/posts');
+              if (!fs.existsSync(postsDir)) {
+                fs.mkdirSync(postsDir, { recursive: true });
+              }
+              fs.writeFileSync(path.join(postsDir, filename), content);
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ success: true }));
             } catch(e) {

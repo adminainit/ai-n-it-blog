@@ -10,9 +10,11 @@ export interface DraftPost {
 
 interface BlogManagerContextType {
   drafts: DraftPost[];
-  addDraft: (draft: Omit<DraftPost, 'id' | 'date' | 'slug'> & { slug?: string }) => void;
+  addDraft: (draft: Omit<DraftPost, 'id' | 'date' | 'slug'> & { slug?: string }) => string;
   updateDraft: (id: string, updates: Partial<DraftPost>) => void;
   deleteDraft: (id: string) => void;
+  deleteMultipleDrafts: (ids: string[]) => void;
+  clearDrafts: () => void;
   getDraft: (id: string) => DraftPost | undefined;
 }
 
@@ -50,6 +52,7 @@ export function BlogManagerProvider({ children }: { children: ReactNode }) {
       date: new Date().toISOString(),
     };
     setDrafts((prev) => [newDraft, ...prev]);
+    return newDraft.id;
   };
 
   const updateDraft = (id: string, updates: Partial<DraftPost>) => {
@@ -62,12 +65,20 @@ export function BlogManagerProvider({ children }: { children: ReactNode }) {
     setDrafts((prev) => prev.filter((draft) => draft.id !== id));
   };
 
+  const deleteMultipleDrafts = (ids: string[]) => {
+    setDrafts((prev) => prev.filter((draft) => !ids.includes(draft.id)));
+  };
+
+  const clearDrafts = () => {
+    setDrafts([]);
+  };
+
   const getDraft = (id: string) => {
     return drafts.find((draft) => draft.id === id);
   };
 
   return (
-    <BlogManagerContext.Provider value={{ drafts, addDraft, updateDraft, deleteDraft, getDraft }}>
+    <BlogManagerContext.Provider value={{ drafts, addDraft, updateDraft, deleteDraft, deleteMultipleDrafts, clearDrafts, getDraft }}>
       {children}
     </BlogManagerContext.Provider>
   );

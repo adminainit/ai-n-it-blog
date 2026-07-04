@@ -10,6 +10,7 @@ interface Post {
   title: string;
   date: string;
   draft: boolean;
+  rawContent?: string;
 }
 
 interface AdminAppProps {
@@ -18,6 +19,17 @@ interface AdminAppProps {
 
 export default function AdminApp({ initialPosts }: AdminAppProps) {
   const [view, setView] = useState<'dashboard' | 'editor'>('dashboard');
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+
+  const handleEditPost = (post: Post) => {
+    setEditingPost(post);
+    setView('editor');
+  };
+
+  const handleCreateNew = () => {
+    setEditingPost(null);
+    setView('editor');
+  };
 
   return (
     <Layout>
@@ -42,14 +54,14 @@ export default function AdminApp({ initialPosts }: AdminAppProps) {
                   </p>
                 </div>
                 <button
-                  onClick={() => setView('editor')}
+                  onClick={handleCreateNew}
                   className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-colors shadow-sm"
                 >
                   Go to Editor
                 </button>
               </header>
 
-              <AdminDashboard posts={initialPosts} />
+              <AdminDashboard posts={initialPosts} onEditPost={handleEditPost} />
             </div>
           </motion.div>
         ) : (
@@ -61,16 +73,19 @@ export default function AdminApp({ initialPosts }: AdminAppProps) {
             transition={{ duration: 0.3 }}
             className="flex-1 flex flex-col"
           >
-            <div className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center">
+            <div className="bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-3 flex items-center justify-between">
               <button
-                onClick={() => setView('dashboard')}
+                onClick={() => {
+                  setView('dashboard');
+                  setEditingPost(null);
+                }}
                 className="flex items-center gap-2 text-sm font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
               >
                 <ArrowLeft size={16} />
                 Back to Dashboard
               </button>
             </div>
-            <PostEditor />
+            <PostEditor initialPost={editingPost} />
           </motion.div>
         )}
       </AnimatePresence>
