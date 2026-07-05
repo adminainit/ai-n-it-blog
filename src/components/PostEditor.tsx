@@ -16,6 +16,34 @@ interface PostEditorProps {
   initialPost?: Post | null;
 }
 
+
+function parseFrontmatter(rawContent) {
+  if (!rawContent) return { data: {} as Record<string, any>, content: '' };
+  const match = rawContent.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
+  if (match) {
+    const frontmatterRaw = match[1];
+    const markdown = match[2];
+    
+    const data: Record<string, any> = {};
+    const lines = frontmatterRaw.split('\n');
+    for (const line of lines) {
+      const splitIndex = line.indexOf(':');
+      if (splitIndex > -1) {
+        const key = line.slice(0, splitIndex).trim();
+        let value = line.slice(splitIndex + 1).trim();
+        if (value.startsWith('"') && value.endsWith('"')) {
+          value = value.slice(1, -1);
+        } else if (value.startsWith("'") && value.endsWith("'")) {
+          value = value.slice(1, -1);
+        }
+        data[key] = value;
+      }
+    }
+    return { data, content: markdown };
+  }
+  return { data: {} as Record<string, any>, content: rawContent };
+}
+
 export default function PostEditor({ initialPost }: PostEditorProps = {}) {
   const { drafts, addDraft, updateDraft, deleteDraft, deleteMultipleDrafts, clearDrafts, syncToBackend, savePostLocal } = useBlogManager();
   const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
@@ -62,6 +90,36 @@ export default function PostEditor({ initialPost }: PostEditorProps = {}) {
 
   const activeDraft = drafts.find(d => d.id === activeDraftId) || drafts[0];
 
+
+  const [localDraft, setLocalDraft] = useState<any>(null);
+
+  // Sync localDraft with activeDraft when switching drafts
+  useEffect(() => {
+    if (activeDraft) {
+      setLocalDraft({ ...activeDraft });
+    }
+  }, [activeDraftId, drafts.length]); // Need drafts.length in case of new draft
+
+  // Auto-save effect
+  useEffect(() => {
+    if (!localDraft || !activeDraft) return;
+    
+    const hasChanges = localDraft.title !== activeDraft.title || 
+                       localDraft.slug !== activeDraft.slug || 
+                       localDraft.content !== activeDraft.content;
+                       
+    if (hasChanges) {
+      const timer = setTimeout(() => {
+        updateDraft(activeDraft.id, { 
+          title: localDraft.title, 
+          slug: localDraft.slug, 
+          content: localDraft.content 
+        });
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [localDraft, activeDraft, updateDraft]);
+
   if (!activeDraft) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-64px)]">
@@ -77,15 +135,15 @@ export default function PostEditor({ initialPost }: PostEditorProps = {}) {
   }
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateDraft(activeDraft.id, { title: e.target.value });
+    if (localDraft) setLocalDraft({ ...localDraft, title: e.target.value });
   };
 
   const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateDraft(activeDraft.id, { slug: e.target.value });
+    if (localDraft) setLocalDraft({ ...localDraft, slug: e.target.value });
   };
 
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    updateDraft(activeDraft.id, { content: e.target.value });
+    if (localDraft) setLocalDraft({ ...localDraft, content: e.target.value });
   };
 
   const handleCreateNew = () => {
@@ -93,11 +151,11 @@ export default function PostEditor({ initialPost }: PostEditorProps = {}) {
   };
 
   const handleFormat = (type: 'bold' | 'italic' | 'link') => {
-    if (!textareaRef.current) return;
+    if (!textareaRef.current || !localDraft) return;
     
     const start = textareaRef.current.selectionStart;
     const end = textareaRef.current.selectionEnd;
-    const text = activeDraft.content;
+    const text = localDraft.content || '';
     const selected = text.substring(start, end);
     let inserted = '';
     
@@ -110,7 +168,7 @@ export default function PostEditor({ initialPost }: PostEditorProps = {}) {
     }
     
     const newContent = text.substring(0, start) + inserted + text.substring(end);
-    updateDraft(activeDraft.id, { content: newContent });
+    if (localDraft) setLocalDraft({ ...localDraft, content: newContent });
     
     // Focus back and set selection
     setTimeout(() => {
@@ -132,14 +190,14 @@ export default function PostEditor({ initialPost }: PostEditorProps = {}) {
     if (!activeDraft) return;
     setIsSaving(true);
     try {
-      let fileName = `${activeDraft.slug || 'new-post'}.mdx`;
+      let fileName = `${localDraft.slug || 'new-post'}.mdx`;
       
       const newPost = {
         id: fileName,
-        title: activeDraft.title || 'Untitled',
+        title: localDraft.title || 'Untitled',
         date: activeDraft.date || new Date().toISOString(),
         draft: false,
-        rawContent: activeDraft.content
+        rawContent: localDraft.content
       };
       
       if (savePostLocal) await savePostLocal(newPost);
@@ -322,7 +380,7 @@ export default function PostEditor({ initialPost }: PostEditorProps = {}) {
           <div className="border-b border-slate-200 dark:border-slate-800 p-6 bg-white dark:bg-slate-950">
             <input
               type="text"
-              value={activeDraft.title}
+              value={localDraft?.title ?? ''}
               onChange={handleTitleChange}
               placeholder="Post Title"
               className="w-full text-4xl font-display font-bold bg-transparent outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-900 dark:text-white transition-colors"
@@ -331,7 +389,7 @@ export default function PostEditor({ initialPost }: PostEditorProps = {}) {
               <span className="text-slate-400 dark:text-slate-500 text-sm mr-2 font-mono">/blog/</span>
               <input
                 type="text"
-                value={activeDraft.slug || ''}
+                value={localDraft?.slug ?? ''}
                 onChange={handleSlugChange}
                 placeholder="post-slug"
                 className="text-sm font-mono bg-transparent outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 text-slate-600 dark:text-slate-400 border-b border-transparent hover:border-slate-200 focus:border-slate-300 dark:hover:border-slate-700 dark:focus:border-slate-600 transition-colors py-0.5"
@@ -347,24 +405,21 @@ export default function PostEditor({ initialPost }: PostEditorProps = {}) {
               <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('edit')}
-                  className={`p-1.5 rounded-md flex items-center justify-center transition-colors ${viewMode === 'edit' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                  title="Edit Mode"
+                  className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-xs font-bold transition-colors ${viewMode === 'edit' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
-                  <Edit3 size={16} />
+                  <Edit3 size={14} /> Edit
                 </button>
                 <button
                   onClick={() => setViewMode('split')}
-                  className={`p-1.5 rounded-md flex items-center justify-center transition-colors ${viewMode === 'split' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                  title="Split Mode"
+                  className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-xs font-bold transition-colors ${viewMode === 'split' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
-                  <Layout size={16} />
+                  <Layout size={14} /> Split
                 </button>
                 <button
                   onClick={() => setViewMode('preview')}
-                  className={`p-1.5 rounded-md flex items-center justify-center transition-colors ${viewMode === 'preview' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                  title="Preview Mode"
+                  className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 text-xs font-bold transition-colors ${viewMode === 'preview' ? 'bg-white dark:bg-slate-700 shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                 >
-                  <Eye size={16} />
+                  <Eye size={14} /> Preview
                 </button>
               </div>
             </div>
@@ -414,7 +469,7 @@ export default function PostEditor({ initialPost }: PostEditorProps = {}) {
                 </div>
                 <textarea
                   ref={textareaRef}
-                  value={activeDraft.content}
+                  value={localDraft?.content ?? ''}
                   onChange={handleContentChange}
                   placeholder="Start writing in Markdown..."
                   className="w-full flex-grow resize-none bg-transparent outline-none font-mono text-sm leading-relaxed text-slate-700 dark:text-slate-300 placeholder:text-slate-400 dark:placeholder:text-slate-600 p-6"
@@ -425,9 +480,23 @@ export default function PostEditor({ initialPost }: PostEditorProps = {}) {
             {/* Preview */}
             {(viewMode === 'preview' || viewMode === 'split') && (
               <div className="flex-1 p-8 overflow-y-auto bg-white dark:bg-slate-900 shadow-inner">
-                <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-display prose-a:text-accent">
-                  <ReactMarkdown>{activeDraft.content}</ReactMarkdown>
-                </div>
+                {(() => {
+                  const { data, content: mdContent } = parseFrontmatter(localDraft?.content ?? '');
+                  return (
+                    <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-display prose-a:text-accent">
+                      {data.image && (
+                        <img src={data.image} alt="Hero" className="w-full h-64 object-cover rounded-xl mb-8" />
+                      )}
+                      {data.title && (
+                        <h1 className="mb-2">{data.title}</h1>
+                      )}
+                      {data.description && (
+                        <p className="text-xl text-slate-500 dark:text-slate-400 mt-0 mb-8">{data.description}</p>
+                      )}
+                      <ReactMarkdown>{mdContent}</ReactMarkdown>
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>

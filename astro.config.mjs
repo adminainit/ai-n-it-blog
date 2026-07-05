@@ -1,3 +1,6 @@
+
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
@@ -7,7 +10,7 @@ import pagefind from 'astro-pagefind';
 import fs from 'fs';
 import path from 'path';
 import { siteConfig } from './site.config.js';
-import Database from 'better-sqlite3';
+
 
 function configApiPlugin() {
   return {
@@ -17,7 +20,7 @@ function configApiPlugin() {
         if (req.url === '/api/config' && req.method === 'POST') {
           let body = '';
           req.on('data', chunk => body += chunk);
-          req.on('end', () => {
+          req.on('end', async () => {
             try {
               const { siteConfig, tailwindConfigColors, logoImageBase64 } = JSON.parse(body);
               
@@ -72,14 +75,36 @@ function configApiPlugin() {
               res.end(JSON.stringify({ error: e.message }));
             }
           });
+        } else if (req.url === '/api/delete-post' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => body += chunk);
+          req.on('end', async () => {
+            try {
+              const { filename } = JSON.parse(body);
+              if (!fs.existsSync('./data')) fs.mkdirSync('./data', { recursive: true });
+              const Database = require('better-sqlite3');
+              const db = new Database('./data/local.db');
+              db.exec('CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, content TEXT)');
+              const delPost = db.prepare('DELETE FROM posts WHERE id = ?');
+              delPost.run(filename);
+              db.close();
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: true }));
+            } catch(e) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: e.message }));
+            }
+          });
         } else if (req.url === '/api/save-post' && req.method === 'POST') {
           let body = '';
           req.on('data', chunk => body += chunk);
-          req.on('end', () => {
+          req.on('end', async () => {
             try {
               const { filename, content } = JSON.parse(body);
               
               // Save to SQLite database
+              if (!fs.existsSync('./data')) fs.mkdirSync('./data', { recursive: true });
+              const Database = require('better-sqlite3');
               const db = new Database('./data/local.db');
               db.exec(`
                 CREATE TABLE IF NOT EXISTS posts (
@@ -123,6 +148,8 @@ export default defineConfig({
     pagefind()
   ],
   vite: {
+    ssr: { external: ['better-sqlite3'] },
+    optimizeDeps: { exclude: ['better-sqlite3'] },
     plugins: [configApiPlugin()]
   }
 });

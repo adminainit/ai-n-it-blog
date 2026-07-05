@@ -1,5 +1,9 @@
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+import fs from 'fs';
+
 import { defineCollection, z } from 'astro:content';
-import Database from 'better-sqlite3';
+
 import matter from 'gray-matter';
 
 const sqliteLoader = () => {
@@ -7,7 +11,10 @@ const sqliteLoader = () => {
     name: 'sqlite-loader',
     load: async ({ store, logger, parseData }) => {
       logger.info('Loading posts from local SQLite database...');
+      if (!fs.existsSync('./data')) fs.mkdirSync('./data', { recursive: true });
+      const Database = require('better-sqlite3');
       const db = new Database('./data/local.db');
+      db.exec('CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, content TEXT)');
       try {
         const posts = db.prepare('SELECT id, content FROM posts').all();
         store.clear();

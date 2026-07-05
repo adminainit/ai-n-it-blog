@@ -95,11 +95,7 @@ function AdminAppContent() {
                 Back to Dashboard
               </button>
             </div>
-            <PostEditor 
-    initialPost={editingPost} 
-    savePostLocal={savePostLocal}
-    syncToBackend={syncToBackend}
-  />
+            <PostEditor initialPost={editingPost} />
           </motion.div>
         )}
       </AnimatePresence>

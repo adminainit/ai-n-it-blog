@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit3, Trash2, Plus, Settings, Eye, FileText, Upload, X, Palette, Bold, Italic, Link as LinkIcon, Save } from 'lucide-react';
+import { Edit3, Trash2, Plus, Settings, Eye, EyeOff, FileText, Upload, X, Palette, Bold, Italic, Link as LinkIcon, Save } from 'lucide-react';
 import { siteConfig } from '../../site.config';
 import mammoth from 'mammoth';
 import TurndownService from 'turndown';
@@ -38,8 +38,30 @@ export default function AdminDashboard({ posts, onEditPost, onDeletePost, syncSt
     }).toUpperCase();
   };
 
-  const toggleDraftStatus = (id: string) => {
-    alert('Please edit the post to change draft status.');
+  const toggleDraftStatus = async (post: Post) => {
+    try {
+      const updatedPost = { ...post, draft: !post.draft };
+      
+      // We need to update the rawContent as well, it has the draft field.
+      if (updatedPost.rawContent) {
+        let newRaw = updatedPost.rawContent;
+        if (newRaw.includes('draft: true')) {
+          newRaw = newRaw.replace('draft: true', 'draft: false');
+        } else if (newRaw.includes('draft: false')) {
+          newRaw = newRaw.replace('draft: false', 'draft: true');
+        } else {
+          // If draft not found in frontmatter, maybe add it
+          newRaw = newRaw.replace('---\n', '---\ndraft: ' + updatedPost.draft + '\n');
+        }
+        updatedPost.rawContent = newRaw;
+      }
+      
+      if (savePostLocal) await savePostLocal(updatedPost);
+      if (syncToBackend) await syncToBackend(updatedPost);
+    } catch (err) {
+      console.error(err);
+      alert('Failed to update draft status.');
+    }
   };
 
   const deletePost = (id: string) => {
@@ -284,6 +306,9 @@ Write your markdown content here...
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
+                          <button onClick={() => toggleDraftStatus(post)} className="p-1.5 text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors" title={post.draft ? "Publish" : "Unpublish"}>
+                            {post.draft ? <Eye size={16} /> : <EyeOff size={16} />}
+                          </button>
                           <button onClick={() => editPost(post)} className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" title="Edit Post">
                             <Edit3 size={16} />
                           </button>

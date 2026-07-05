@@ -95,7 +95,17 @@ export function usePostsSync(initialPosts: Post[] = []) {
   const deletePostLocal = useCallback(async (id: string) => {
     await dbService.deletePost(id);
     setPosts(prev => prev.filter(p => p.id !== id));
-    // Note: also need an endpoint to delete from backend if we want full sync
+    
+    // Also delete from backend
+    try {
+      await fetch('/api/delete-post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: id }),
+      });
+    } catch (e) {
+      console.error('Failed to delete from backend:', e);
+    }
   }, []);
 
   return {
