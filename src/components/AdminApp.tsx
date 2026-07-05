@@ -1,3 +1,4 @@
+import { siteConfig } from '../../site.config';
 import React, { useState } from 'react';
 import { BlogManagerProvider, useBlogManager } from './BlogManager';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -48,9 +49,14 @@ function AdminAppContent() {
             <div className="max-w-[1200px] mx-auto px-6 md:px-10 py-12 md:py-20">
               <header className="mb-12 border-b border-slate-200 dark:border-slate-800 pb-8 flex items-center justify-between">
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-2">
-                    Admin Dashboard
-                  </h1>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+                      Admin Dashboard
+                    </h1>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
+                      v{siteConfig.version || '1.0.0'}
+                    </span>
+                  </div>
                   <p className="text-sm text-slate-500 dark:text-slate-400">
                     Manage your blog posts, media, and site settings.
                   </p>

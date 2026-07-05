@@ -50,7 +50,7 @@ function Footer() {
             {siteConfig.branding.logoText}
           </span>
           <span className="text-sm text-slate-500 dark:text-slate-400">
-            © {new Date().getFullYear()} All rights reserved.
+            © {new Date().getFullYear()} All rights reserved. <span className="ml-2 px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-800 text-xs font-mono">v{siteConfig.version || '1.0.0'}</span>
           </span>
         </div>
         <div className="flex space-x-6 text-sm text-slate-500 dark:text-slate-400">

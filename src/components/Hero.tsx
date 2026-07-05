@@ -18,41 +18,41 @@ export default function Hero() {
   };
 
   return (
-    <section className="flex flex-col justify-center gap-4 h-full">
+    <section className="flex flex-col items-center justify-center gap-4 h-full w-full py-10 md:py-16">
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-col gap-5 items-center text-center"
+        className="flex flex-col gap-6 items-center text-center w-full max-w-3xl"
       >
-        <motion.span
+        <motion.span 
            variants={itemVariants}
-           className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 w-max uppercase tracking-wider"
+           className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 w-max uppercase tracking-wider shadow-sm ring-1 ring-indigo-500/20"
         >
-          Welcome
+          {siteConfig.homePage?.heroWelcomeText || 'Welcome'}
         </motion.span>
 
         <motion.h1 
-          variants={itemVariants}
-          className="text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight text-slate-900 dark:text-white"
+           variants={itemVariants}
+           className="text-5xl md:text-7xl font-extrabold leading-[1.1] tracking-tight text-slate-900 dark:text-white"
         >
           {siteConfig.title}
         </motion.h1>
         
         <motion.p 
-          variants={itemVariants}
-          className="text-slate-500 dark:text-slate-400 text-base md:text-lg leading-relaxed max-w-[600px] mt-2"
+           variants={itemVariants}
+           className="text-slate-500 dark:text-slate-400 text-lg md:text-xl leading-relaxed max-w-[600px] mt-2"
         >
           {siteConfig.description}
         </motion.p>
         
         <motion.div 
-          variants={itemVariants}
-          className="flex flex-col sm:flex-row items-center gap-4 pt-2"
+           variants={itemVariants}
+           className="flex flex-col sm:flex-row items-center gap-4 pt-6 w-full sm:w-auto"
         >
           <a 
             href={siteConfig.homePage?.heroButtonLink || "/blog"} 
-            className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20 w-full sm:w-auto text-center"
+            className="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-xl shadow-indigo-200 dark:shadow-indigo-900/20 w-full sm:w-auto text-center border border-indigo-500 hover:scale-105 active:scale-95"
           >
             {siteConfig.homePage?.heroButtonText || 'Read the Blog'}
           </a>

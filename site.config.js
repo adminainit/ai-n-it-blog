@@ -1,4 +1,5 @@
 export const siteConfig = {
+  version: '1.1.0',
   title: 'Corporate Insights',
   description: 'A professional publication delivering industry insights and strategic perspectives.',
   url: 'https://example-corporate.com',

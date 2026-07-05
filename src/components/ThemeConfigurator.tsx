@@ -31,8 +31,17 @@ export default function ThemeConfigurator() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Bump version logic
+      let currentVersion = siteConfig.version || '1.0.0';
+      const parts = currentVersion.split('.');
+      if (parts.length === 3) {
+        parts[2] = (parseInt(parts[2]) + 1).toString();
+        currentVersion = parts.join('.');
+      }
+      
       const newSiteConfig = {
         ...siteConfig,
+        version: currentVersion,
         title: formData.title,
         description: formData.description,
         branding: {
