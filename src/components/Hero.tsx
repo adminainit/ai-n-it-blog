@@ -23,7 +23,7 @@ export default function Hero() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-col gap-4 items-start text-left"
+        className="flex flex-col gap-5 items-center text-center"
       >
         <motion.span
            variants={itemVariants}
@@ -41,7 +41,7 @@ export default function Hero() {
         
         <motion.p 
           variants={itemVariants}
-          className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-[280px]"
+          className="text-slate-500 dark:text-slate-400 text-base md:text-lg leading-relaxed max-w-[600px] mt-2"
         >
           {siteConfig.description}
         </motion.p>
@@ -51,10 +51,10 @@ export default function Hero() {
           className="flex flex-col sm:flex-row items-center gap-4 pt-2"
         >
           <a 
-            href="/blog" 
-            className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold transition-all shadow-sm shadow-indigo-200 dark:shadow-none w-full sm:w-auto text-center"
+            href={siteConfig.homePage?.heroButtonLink || "/blog"} 
+            className="px-8 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20 w-full sm:w-auto text-center"
           >
-            Read the Blog
+            {siteConfig.homePage?.heroButtonText || 'Read the Blog'}
           </a>
         </motion.div>
       </motion.div>

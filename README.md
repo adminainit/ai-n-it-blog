@@ -74,6 +74,7 @@ The Admin Portal now includes a **Site Settings & Theme Configurator** directly 
 3. You can visually edit:
    - **Site Title** & **Description**
    - **Logo Text**
+   - **Home Page Hero Welcome Text & Button settings**
    - **Primary, Secondary, and Accent Colors** (using the built-in color picker).
 4. Click **Save Settings**. This leverages a custom backend API to automatically update `site.config.js` and `tailwind.config.mjs` on your local filesystem!
 5. *Note: You may need to refresh your browser or restart the dev server to see the tailwind color changes fully propagate.*

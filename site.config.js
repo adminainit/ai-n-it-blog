@@ -15,6 +15,11 @@ export const siteConfig = {
     { name: 'Twitter', url: 'https://twitter.com' },
     { name: 'LinkedIn', url: 'https://linkedin.com' },
   ],
+  homePage: {
+    heroWelcomeText: 'Welcome',
+    heroButtonText: 'Read the Blog',
+    heroButtonLink: '/blog'
+  },
   theme: {
     hexColors: {
       primary: '#0f172a', // Slate 900
