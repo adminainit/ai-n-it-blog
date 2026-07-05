@@ -199,11 +199,10 @@ These are automatically generated at build-time.
 
 ---
 
-## 9. Force Syncing from GitHub (Discard Local Changes)
+## 9. Safe Syncing from GitHub
+If you pull updates from GitHub via GUI tools like SourceTree, you might encounter "merge conflicts" or errors saying your local files would be overwritten. This happens because the **Admin Portal** modifies local configuration files (`site.config.js`, `tailwind.config.mjs`) when you change themes.
 
-If you have made edits on GitHub directly (or pushed from another machine) and you want your local machine to exactly match the GitHub repository while **discarding any local uncommitted changes**, we have provided automated synchronization scripts.
-
-**Warning: This will permanently delete any local files or changes that have not been committed and pushed to GitHub.**
+To easily sync your code without losing any local settings or data, we have provided **Safe Sync** scripts. These scripts will automatically commit your local changes and seamlessly pull the latest code.
 
 **Linux / macOS Sync:**
 Make the script executable and run it:
@@ -217,10 +216,9 @@ Open PowerShell and run:
 ```powershell
 .\sync-from-github.ps1
 ```
-
 *(Note: If you receive a "running scripts is disabled on this system" error, run this command first: `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` and type `Y` to confirm. Then run the script again.)*
 
-This script safely fetches the latest code and uses a "hard reset" to force the machine's state to match the GitHub version one-way.
+These scripts guarantee that your `data/local.db` is preserved and any theme changes you made locally are cleanly committed.
 
 ## Database & Storage Setup (better-sqlite3)
 This blog uses `better-sqlite3` for local persistence to enable editing and previewing posts through the Admin Portal, and to save published content to the server.

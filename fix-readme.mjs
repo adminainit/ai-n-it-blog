@@ -1,27 +1,30 @@
 import fs from 'fs';
 let content = fs.readFileSync('README.md', 'utf8');
 
-const additionalNotes = `
-## Database & Storage Setup (better-sqlite3)
-This blog uses \`better-sqlite3\` for local persistence to enable editing and previewing posts through the Admin Portal, and to save published content to the server.
+const regex = /## 9\. Force Syncing from GitHub \(Discard Local Changes\)[\s\S]*?one-way\./;
 
-### Configuration
-- The database is stored in the \`data/local.db\` file, which is created automatically if it doesn't exist.
-- When saving a post in the Admin Portal, it runs through an internal API route which stores the content in the database.
-- The Astro static site generation pulls posts from this local SQLite database instead of local Markdown files.
+const newSection = `## 9. Safe Syncing from GitHub
+If you pull updates from GitHub via GUI tools like SourceTree, you might encounter "merge conflicts" or errors saying your local files would be overwritten. This happens because the **Admin Portal** modifies local configuration files (\`site.config.js\`, \`tailwind.config.mjs\`) when you change themes.
 
-### Seeding Dummy Data
-If your database is empty, the build process may fail because it expects at least one post. You can run the seed script to create a dummy post:
+To easily sync your code without losing any local settings or data, we have provided **Safe Sync** scripts. These scripts will automatically commit your local changes and seamlessly pull the latest code.
+
+**Linux / macOS Sync:**
+Make the script executable and run it:
 \`\`\`bash
-node seed-db.js
+chmod +x sync-from-github.sh
+./sync-from-github.sh
 \`\`\`
 
-### Troubleshooting \`better-sqlite3\` Installation
-If you run into installation issues with \`better-sqlite3\` (like missing binaries):
-- Ensure you have a C/C++ compiler installed on your system (e.g. \`build-essential\` on Linux, Xcode Command Line Tools on macOS, or Visual Studio Build Tools on Windows).
-- Run \`npm rebuild better-sqlite3\` to recompile the native bindings for your architecture.
-- If you see an error like "The collection 'posts' does not exist", make sure to run \`node seed-db.js\`!
-`;
+**Windows Sync:**
+Open PowerShell and run:
+\`\`\`powershell
+.\\sync-from-github.ps1
+\`\`\`
+*(Note: If you receive a "running scripts is disabled on this system" error, run this command first: \`Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser\` and type \`Y\` to confirm. Then run the script again.)*
 
-content = content + additionalNotes;
-fs.writeFileSync('README.md', content);
+These scripts guarantee that your \`data/local.db\` is preserved and any theme changes you made locally are cleanly committed.`;
+
+if (content.match(regex)) {
+  content = content.replace(regex, newSection);
+  fs.writeFileSync('README.md', content);
+}

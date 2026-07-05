@@ -1,28 +1,31 @@
 #!/bin/bash
-# Sync changes from GitHub, ignoring all local file modifications EXCEPT local data
-
-set -e
-
 echo "========================================="
-echo " Syncing from GitHub (Preserving Local Data DB)"
+echo " Safe Sync from GitHub (Preserving Local Data)"
 echo "========================================="
+echo "This script safely updates your project from GitHub."
+echo "It will automatically save your local configuration changes (like Site Settings)"
+echo "and then pull down the newest code without erasing your data."
 
-# Fetch the latest from remote
-echo "1. Fetching latest from GitHub..."
-git fetch --all
+echo ""
+echo "1. Saving local changes (site.config.js, etc.)..."
+git add .
+git commit -m "Auto-save local changes before sync" || echo "No local changes to commit."
 
-# Get the current branch name
+echo ""
+echo "2. Pulling latest code from GitHub..."
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "main")
 if [ "$BRANCH" == "HEAD" ]; then
     BRANCH="main"
 fi
 
-echo "2. Resetting local branch '$BRANCH' to match remote..."
-git reset --hard origin/$BRANCH
-
-echo "3. Cleaning up untracked files (Preserving data/ folder)..."
-git clean -fd -e data/ -e public/logo-custom.* -e site.config.js -e tailwind.config.mjs
+# Pull with rebase to keep local commits neatly on top of the fetched updates
+git pull origin $BRANCH --rebase || {
+    echo ""
+    echo "Warning: There was a conflict during pull."
+    echo "Please resolve it in your GUI tool (like SourceTree) or editor."
+    exit 1
+}
 
 echo "========================================="
-echo " Sync Complete! The core app is updated, and your local data database was retained."
+echo " Sync Complete! Your data and settings are safe."
 echo "========================================="
