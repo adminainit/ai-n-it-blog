@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Edit3, Trash2, Plus, Settings, Eye, EyeOff, FileText, Upload, X, Palette, Bold, Italic, Link as LinkIcon, Save } from 'lucide-react';
 import { siteConfig } from '../../site.config';
 import mammoth from 'mammoth';
 import TurndownService from 'turndown';
 import ThemeConfigurator from './ThemeConfigurator';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 interface Post {
   id: string;
@@ -123,6 +124,7 @@ function GithubDeployer() {
 
 export default function AdminDashboard({ posts, onEditPost, onDeletePost, syncStatus, isSyncing, syncToBackend, savePostLocal }: any) {
   const [activeTab, setActiveTab] = useState<'posts' | 'settings' | 'deploy'>('posts');
+  const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [creationMode, setCreationMode] = useState<'choose' | 'write' | 'import'>('choose');
   const [isConverting, setIsConverting] = useState(false);
@@ -317,6 +319,22 @@ Write your markdown content here...
     setEditingPostId(null);
   };
 
+  const chartData = useMemo(() => {
+    const last30Days = Array.from({ length: 30 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (29 - i));
+      return d.toISOString().split('T')[0];
+    });
+
+    return last30Days.map(date => {
+      const count = posts.filter((post: Post) => post.date && post.date.startsWith(date)).length;
+      return {
+        date: new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        posts: count
+      };
+    });
+  }, [posts]);
+
   return (
     <div className="flex flex-col md:flex-row gap-8">
       {/* Sidebar Navigation */}
@@ -343,9 +361,89 @@ Write your markdown content here...
       <div className="flex-grow">
         {activeTab === 'posts' && (
           <div className="flex flex-col gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow group"
+              >
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-indigo-50 dark:bg-indigo-900/20 blur-2xl group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/30 transition-colors pointer-events-none"></div>
+                <div className="relative flex flex-col gap-4">
+                  <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+                    <FileText size={24} />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{posts.length}</p>
+                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wider">Total Posts</p>
+                  </div>
+                </div>
+              </motion.div>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow group"
+              >
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-green-50 dark:bg-green-900/20 blur-2xl group-hover:bg-green-100 dark:group-hover:bg-green-900/30 transition-colors pointer-events-none"></div>
+                <div className="relative flex flex-col gap-4">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 rounded-xl flex items-center justify-center">
+                    <Eye size={24} />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{posts.filter(p => !p.draft).length}</p>
+                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wider">Published</p>
+                  </div>
+                </div>
+              </motion.div>
+              
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="relative overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow group"
+              >
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-amber-50 dark:bg-amber-900/20 blur-2xl group-hover:bg-amber-100 dark:group-hover:bg-amber-900/30 transition-colors pointer-events-none"></div>
+                <div className="relative flex flex-col gap-4">
+                  <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center">
+                    <EyeOff size={24} />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{posts.filter(p => p.draft).length}</p>
+                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-wider">Drafts</p>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm"
+            >
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Post Activity (Last 30 Days)</h3>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
+                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                    <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                    <Tooltip 
+                      cursor={{ fill: '#f1f5f9', opacity: 0.1 }}
+                      contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
+                      itemStyle={{ color: '#818cf8' }}
+                    />
+                    <Bar dataKey="posts" fill="#4f46e5" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </motion.div>
+
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
               className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl p-5"
             >
               <h3 className="font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-2 mb-2">
@@ -365,20 +463,29 @@ Write your markdown content here...
               animate={{ opacity: 1, y: 0 }}
               className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm"
             >
-              <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+              <div className="p-6 border-b border-slate-200 dark:border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-4">
     All Posts
     {isSyncing && <span className="text-sm text-indigo-500 font-bold flex items-center gap-2"><div className="w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div> Syncing...</span>}
     {!isSyncing && syncStatus === 'success' && <span className="text-sm text-green-600 font-bold flex items-center gap-1">✓ Synced</span>}
     {!isSyncing && syncStatus === 'error' && <span className="text-sm text-red-600 font-bold flex items-center gap-1">✗ Sync Failed</span>}
   </h2>
-                <button 
-                  onClick={() => setIsModalOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors"
-                >
-                  <Plus size={16} />
-                  New Post
-                </button>
+                <div className="flex items-center gap-3 w-full md:w-auto">
+                  <input
+                    type="text"
+                    placeholder="Search posts..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-grow md:flex-grow-0 px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                  />
+                  <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors shrink-0"
+                  >
+                    <Plus size={16} />
+                    New Post
+                  </button>
+                </div>
               </div>
             
             <div className="overflow-x-auto">
@@ -392,7 +499,7 @@ Write your markdown content here...
                   </tr>
                 </thead>
                 <tbody>
-                  {posts.map((post) => (
+                  {posts.filter((post: Post) => post.title.toLowerCase().includes(searchQuery.toLowerCase()) || post.id.toLowerCase().includes(searchQuery.toLowerCase())).map((post: Post) => (
                     <tr key={post.id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="font-bold text-sm text-slate-900 dark:text-white">{post.title}</div>
