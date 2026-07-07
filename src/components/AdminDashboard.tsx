@@ -327,7 +327,14 @@ Write your markdown content here...
     });
 
     return last30Days.map(date => {
-      const count = posts.filter((post: Post) => post.date && post.date.startsWith(date)).length;
+      const count = posts.filter((post: Post) => {
+        if (!post.date) return false;
+        try {
+          return new Date(post.date).toISOString().startsWith(date);
+        } catch(e) {
+          return String(post.date).startsWith(date);
+        }
+      }).length;
       return {
         date: new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
         posts: count

@@ -203,6 +203,17 @@ export default defineConfig({
   vite: {
     ssr: { external: ['better-sqlite3'] },
     optimizeDeps: { exclude: ['better-sqlite3'] },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              return 'vendor';
+            }
+          }
+        }
+      }
+    },
     plugins: [configApiPlugin()]
   }
 });
