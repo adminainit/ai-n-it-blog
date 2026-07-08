@@ -239,3 +239,43 @@ If you run into installation issues with `better-sqlite3` (like missing binaries
 - Ensure you have a C/C++ compiler installed on your system (e.g. `build-essential` on Linux, Xcode Command Line Tools on macOS, or Visual Studio Build Tools on Windows).
 - Run `npm rebuild better-sqlite3` to recompile the native bindings for your architecture.
 - If you see an error like "The collection 'posts' does not exist", make sure to run `npm run seed`!
+
+---
+
+## 10. VS Code CMS Integration
+
+If you prefer to edit your blog posts in Visual Studio Code rather than the built-in Admin Portal, we have provided a sync tool to extract posts from the local database into Markdown files, and import them back when you're done.
+
+### Prerequisites (VS Code Extensions)
+For the best authoring experience in VS Code, we recommend installing the following extensions:
+1. **MDX** (by unified) - Syntax highlighting and support for MDX files.
+2. **Prettier - Code formatter** - To keep your Markdown clean.
+3. **Tailwind CSS IntelliSense** - If you use Tailwind utility classes in your markdown.
+
+### Exporting Posts to VS Code
+Run the following command to export all blog posts from the SQLite database into local Markdown files:
+```bash
+npm run cms:export
+```
+This will create (or overwrite) files in the `src/content/vscode-cms/` directory.
+
+### Managing Content
+1. Open the `src/content/vscode-cms/` directory in VS Code.
+2. Edit existing posts or create new Markdown files (`.md` or `.mdx`).
+3. Be sure to include the YAML frontmatter at the top of your files (title, date, description, etc.).
+
+### Importing Posts Back to the Database
+Once you have finished editing, you must import the files back into the database so they appear on the site.
+Run the following command:
+```bash
+npm run cms:import
+```
+This will read all Markdown files in `src/content/vscode-cms/` and update the local SQLite database.
+
+### Previewing Changes
+To see your updated content, restart the development server or run a build:
+```bash
+npm run dev
+# or
+npm run build && npm run preview
+```
