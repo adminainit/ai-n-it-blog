@@ -1,31 +1,37 @@
 export const siteConfig = {
-  version: '1.1.1',
-  title: 'Corporate Insights',
-  description: 'A professional publication delivering industry insights and strategic perspectives.',
-  url: 'https://example-corporate.com',
-  author: 'Corporate Editorial Team',
-  branding: {
-    logoText: 'Nexus Corp',
-    logoImage: '', // Can be a URL to a white-labeled logo
-    typography: {
-      headingFont: 'Space Grotesk',
-      bodyFont: 'Inter',
+  "version": "1.1.4",
+  "title": "Innovate, Automate, Collaborate - The Future of Digital Work.",
+  "description": "Your destination for insights on AI, technology, digital transformation, collaboration, email, and the evolving tools that connect modern work",
+  "url": "https://example-corporate.com",
+  "author": "Corporate Editorial Team",
+  "branding": {
+    "logoText": "AI-n-IT.com",
+    "logoImage": "/logo-custom.svg",
+    "typography": {
+      "headingFont": "Space Grotesk",
+      "bodyFont": "Inter"
+    }
+  },
+  "socialLinks": [
+    {
+      "name": "Twitter",
+      "url": "https://twitter.com"
     },
-  },
-  socialLinks: [
-    { name: 'Twitter', url: 'https://twitter.com' },
-    { name: 'LinkedIn', url: 'https://linkedin.com' },
+    {
+      "name": "LinkedIn",
+      "url": "https://linkedin.com"
+    }
   ],
-  homePage: {
-    heroWelcomeText: 'Welcome',
-    heroButtonText: 'Read the Blog',
-    heroButtonLink: '/blog'
+  "homePage": {
+    "heroWelcomeText": "Welcome to AI-n-IT",
+    "heroButtonText": "Read the Blog",
+    "heroButtonLink": "/blog"
   },
-  theme: {
-    hexColors: {
-      primary: '#0f172a', // Slate 900
-      secondary: '#475569', // Slate 600
-      accent: '#3b82f6', // Blue 500
+  "theme": {
+    "hexColors": {
+      "primary": "#0f172a",
+      "secondary": "#475569",
+      "accent": "#3b82f6"
     }
   }
 };
