@@ -242,40 +242,114 @@ If you run into installation issues with `better-sqlite3` (like missing binaries
 
 ---
 
-## 10. VS Code CMS Integration
+---
 
-If you prefer to edit your blog posts in Visual Studio Code rather than the built-in Admin Portal, we have provided a sync tool to extract posts from the local database into Markdown files, and import them back when you're done.
+## 10. Detailed VS Code CMS Integration
 
-### Prerequisites (VS Code Extensions)
-For the best authoring experience in VS Code, we recommend installing the following extensions:
-1. **MDX** (by unified) - Syntax highlighting and support for MDX files.
-2. **Prettier - Code formatter** - To keep your Markdown clean.
-3. **Tailwind CSS IntelliSense** - If you use Tailwind utility classes in your markdown.
+You can treat VS Code as your local CMS to manage and edit your blog posts natively. This provides a great developer experience with syntax highlighting, GitHub Copilot (if you use it), and version control.
 
-### Exporting Posts to VS Code
-Run the following command to export all blog posts from the SQLite database into local Markdown files:
+### Step 1: Install Recommended VS Code Extensions
+For the best authoring experience, install the following extensions from the VS Code Marketplace:
+1. **MDX** (by unified) - Provides syntax highlighting for MDX and Markdown files.
+2. **Prettier - Code formatter** - Keeps your Markdown clean and properly spaced.
+3. **Tailwind CSS IntelliSense** - If you want to use Tailwind utility classes directly inside your markdown files.
+
+### Step 2: Export Database Posts to VS Code
+All blog posts are securely stored in the local SQLite database. To edit them in VS Code, you first need to extract them into standard Markdown files.
+
+Open your integrated terminal in VS Code and run:
 ```bash
 npm run cms:export
 ```
-This will create (or overwrite) files in the `src/content/vscode-cms/` directory.
+- This script exports all database posts to the `src/content/vscode-cms/` directory.
+- Each post is saved as a `.md` file (e.g. `hello-world.md`).
 
-### Managing Content
-1. Open the `src/content/vscode-cms/` directory in VS Code.
-2. Edit existing posts or create new Markdown files (`.md` or `.mdx`).
-3. Be sure to include the YAML frontmatter at the top of your files (title, date, description, etc.).
+### Step 3: Write and Edit Content
+1. In the VS Code Explorer, open the `src/content/vscode-cms/` folder.
+2. You can **edit existing files** or **create new `.md` or `.mdx` files** for new blog posts.
+3. **YAML Frontmatter (Auto-Injected!)**: 
+   Astro requires frontmatter (metadata) at the top of your markdown files. The standard format looks like this:
+   ```yaml
+   ---
+   title: "Your Post Title Here"
+   date: 2026-07-04
+   description: "A short excerpt about the post for the summary cards."
+   image: "https://images.unsplash.com/photo-1542744173-8e7e53415bb0" # Optional URL or path
+   draft: false
+   tags: ["corporate", "strategy"]
+   ---
+   ```
+   *Don't worry if you forget!* If you create a new file without frontmatter, our sync tool will **automatically detect it and inject the required frontmatter** based on the filename and current date.
 
-### Importing Posts Back to the Database
-Once you have finished editing, you must import the files back into the database so they appear on the site.
+### Step 4: Import Posts Back to the Database
+Once you are done writing or editing, you need to sync the files back into the database so the Admin Portal and public site can read them.
+
 Run the following command:
 ```bash
 npm run cms:import
 ```
-This will read all Markdown files in `src/content/vscode-cms/` and update the local SQLite database.
+- This will scan `src/content/vscode-cms/`, automatically fix any missing frontmatter, and push the content back to your local SQLite database.
 
-### Previewing Changes
-To see your updated content, restart the development server or run a build:
-```bash
-npm run dev
-# or
-npm run build && npm run preview
-```
+### Step 5: Preview Your Changes
+To see your updated content on the live site:
+1. Run the dev server if it isn't running:
+   ```bash
+   npm run dev
+   ```
+2. Check the blog section in your browser. If you prefer to test the built static version, run `npm run build && npm run preview`.
+
+---
+
+## 11. Publishing to GitHub Pages (Detailed Guide)
+
+You can publish the public-facing blog to GitHub Pages entirely for free. The automated GitHub Actions workflow will strip out the Admin Portal, compile the static HTML, and publish it securely.
+
+### Prerequisites: Get a GitHub Personal Access Token (PAT)
+1. Go to [github.com](https://github.com/) and log in.
+2. In the top right corner, click your profile picture and go to **Settings**.
+3. Scroll down the left sidebar and click **< > Developer settings**.
+4. Click **Personal access tokens** -> **Tokens (classic)**.
+5. Click **Generate new token (classic)** (you may be asked to re-enter your password).
+6. Give it a **Note** (e.g., "Blog Deploy Token").
+7. **Important Scopes**: Check the boxes for **`repo`** (Full control of private repositories) and **`workflow`** (Update GitHub Action workflows).
+8. Scroll to the bottom and click **Generate token**.
+9. **Copy this token immediately** and save it somewhere secure. You won't be able to see it again!
+
+### Step 1: Create the GitHub Repository
+1. Go back to the main GitHub page and click the **+** icon in the top right -> **New repository**.
+2. Name your repository (e.g., `my-awesome-blog`).
+3. Make it **Public** (required for free GitHub Pages).
+4. **DO NOT** check "Add a README file" or add a .gitignore/license. Leave it completely empty.
+5. Click **Create repository**.
+
+### Step 2: Deploy from the Admin Portal
+1. Start your local dev server (`npm run dev`) and open `http://localhost:3000/admin/`.
+2. Click the **GitHub Deploy** tab on the left sidebar.
+3. Fill out the form:
+   - **GitHub Username**: Your exact GitHub username.
+   - **Repository Name**: The name of the empty repository you just created (e.g., `my-awesome-blog`).
+   - **Personal Access Token**: Paste the token you generated earlier.
+4. Click **Deploy to GitHub**.
+5. Wait for the terminal output to finish. It will automatically initialize Git, commit your code, and push it forcefully to your repository.
+
+### Step 3: Enable GitHub Pages Settings
+1. Go to your repository on GitHub.
+2. Click the **Settings** tab near the top.
+3. On the left sidebar, click **Pages**.
+4. Under **Build and deployment**, look for the **Source** dropdown. Change it to **GitHub Actions**.
+5. GitHub will now detect the `deploy.yml` file included in this project and start building your site.
+6. Click the **Actions** tab at the top of your repository to watch the build progress. Once it turns green, your site is live!
+
+### Step 4 (Optional): Set up a Custom Domain
+If you own a domain name (like `myblog.com`):
+1. In the GitHub Pages settings (Settings -> Pages), scroll down to **Custom domain**.
+2. Type in your domain name (e.g., `myblog.com`) and click **Save**.
+3. **Configure DNS**: Go to your domain registrar (GoDaddy, Namecheap, etc.) and edit your DNS records:
+   - Create 4 **A Records** pointing to GitHub's IPs:
+     - `185.199.108.153`
+     - `185.199.109.153`
+     - `185.199.110.153`
+     - `185.199.111.153`
+   - Create a **CNAME Record** for host `www` pointing to `your-username.github.io`.
+4. Wait for DNS to propagate (can take a few hours).
+5. Back in the GitHub Pages settings, check the **Enforce HTTPS** box to get a free SSL certificate.

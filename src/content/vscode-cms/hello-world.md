@@ -1,8 +1,10 @@
 ---
-title: "Hello World"
-description: "My first post"
-date: "2026-07-05T00:00:00.000Z"
+title: Hello World
+description: My first post
+date: '2026-07-05T00:00:00.000Z'
 draft: false
+tags:
+  - post
 ---
 
 # Hello World
