@@ -257,10 +257,20 @@ For the best authoring experience, install the following extensions from the VS 
 ### Step 2: Export Database Posts to VS Code
 All blog posts are securely stored in the local SQLite database. To edit them in VS Code, you first need to extract them into standard Markdown files.
 
-Open your integrated terminal in VS Code and run:
+We have provided automated scripts to make this easier:
+
+**Linux / macOS:**
 ```bash
-npm run cms:export
+./cms-export.sh
 ```
+
+**Windows:**
+```powershell
+.\cms-export.ps1
+```
+
+*(Alternatively, you can run `npm run cms:export` directly.)*
+
 - This script exports all database posts to the `src/content/vscode-cms/` directory.
 - Each post is saved as a `.md` file (e.g. `hello-world.md`).
 
@@ -284,10 +294,20 @@ npm run cms:export
 ### Step 4: Import Posts Back to the Database
 Once you are done writing or editing, you need to sync the files back into the database so the Admin Portal and public site can read them.
 
-Run the following command:
+We have provided scripts for importing as well:
+
+**Linux / macOS:**
 ```bash
-npm run cms:import
+./cms-import.sh
 ```
+
+**Windows:**
+```powershell
+.\cms-import.ps1
+```
+
+*(Alternatively, you can run `npm run cms:import` directly.)*
+
 - This will scan `src/content/vscode-cms/`, automatically fix any missing frontmatter, and push the content back to your local SQLite database.
 
 ### Step 5: Preview Your Changes
@@ -299,6 +319,7 @@ To see your updated content on the live site:
 2. Check the blog section in your browser. If you prefer to test the built static version, run `npm run build && npm run preview`.
 
 ---
+
 
 ## 11. Publishing to GitHub Pages (Detailed Guide)
 
