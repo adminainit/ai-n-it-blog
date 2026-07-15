@@ -16,8 +16,16 @@ const sqliteLoader = () => {
       const db = new Database('./data/local.db');
       db.exec('CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, content TEXT)');
       try {
-        const posts = db.prepare('SELECT id, content FROM posts').all();
+        let posts = db.prepare('SELECT id, content FROM posts').all();
         store.clear();
+        
+        if (posts.length === 0) {
+          logger.info('No posts found in database. Seeding a default post to prevent build errors.');
+          const dummyContent = `---\ntitle: "Welcome to your Blog"\ndescription: "This is an auto-generated placeholder post."\ndate: "${new Date().toISOString()}"\ndraft: false\ntags: ["welcome"]\n---\n\n# Welcome!\n\nThis is a placeholder post. You can delete it once you add your own posts.`;
+          db.prepare('INSERT OR REPLACE INTO posts (id, content) VALUES (?, ?)').run('welcome.md', dummyContent);
+          posts = [{ id: 'welcome.md', content: dummyContent }];
+        }
+
         for (const post of posts) {
           try {
             const parsed = matter(post.content);
