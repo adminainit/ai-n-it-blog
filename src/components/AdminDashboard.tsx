@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit3, Trash2, Plus, Settings, Eye, EyeOff, FileText, Upload, X, Palette, Bold, Italic, Link as LinkIcon, Save } from 'lucide-react';
+import { Edit3, Trash2, Plus, Settings, Eye, EyeOff, FileText, Upload, X, Palette, Bold, Italic, Link as LinkIcon, Save, Rocket } from 'lucide-react';
 import { siteConfig } from '../../site.config';
 import mammoth from 'mammoth';
 import TurndownService from 'turndown';
@@ -360,6 +360,13 @@ Write your markdown content here...
           >
             <Settings size={18} />
             Settings
+          </button>
+          <button 
+            onClick={() => setActiveTab('deploy')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all ${activeTab === 'deploy' ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-200 dark:shadow-none' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+          >
+            <Rocket size={18} />
+            Deployment
           </button>
         </nav>
       </div>

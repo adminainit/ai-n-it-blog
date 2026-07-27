@@ -136,7 +136,7 @@ To persist this project and publish the **Public Site** to the internet for free
 
 **Step 2: Deploy via Admin Portal**
 1. Open the **Admin Portal** (`http://localhost:3000/admin/`).
-2. Navigate to the **GitHub Deploy** tab.
+2. Navigate to the **Deployment** tab.
 3. Enter your GitHub Username, the Repository Name you just created, and paste your PAT.
 4. Click **Deploy to GitHub**. You will see live status and error logging directly in the terminal UI!
 
@@ -345,7 +345,7 @@ You can publish the public-facing blog to GitHub Pages entirely for free. The au
 
 ### Step 2: Deploy from the Admin Portal
 1. Start your local dev server (`npm run dev`) and open `http://localhost:3000/admin/`.
-2. Click the **GitHub Deploy** tab on the left sidebar.
+2. Click the **Deployment** tab on the left sidebar.
 3. Fill out the form:
    - **GitHub Username**: Your exact GitHub username.
    - **Repository Name**: The name of the empty repository you just created (e.g., `my-awesome-blog`).
