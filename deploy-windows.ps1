@@ -1,10 +1,9 @@
 <#
 .SYNOPSIS
-    Automated Deployment Build Script for Windows
-.DESCRIPTION
+    Automated Deployment Build Script for Windows.
+DESCRIPTION
     This script installs dependencies, cleans previous builds, and generates the static production build for the application.
 #>
-
 $ErrorActionPreference = "Stop"
 
 Write-Host "=========================================" -ForegroundColor Cyan
@@ -28,11 +27,8 @@ Write-Host "Node version: $nodeVersion"
 Write-Host "NPM version: $npmVersion"
 
 Write-Host "[2/4] Installing dependencies..." -ForegroundColor Yellow
-if (Test-Path "package-lock.json") {
-    npm ci
-} else {
-    npm install
-}
+# Using standard install instead of ci to allow native module rebuilds on different architectures if needed
+npm install
 
 Write-Host "[3/4] Securing Public Build (Removing Admin Portal)..." -ForegroundColor Yellow
 if (Test-Path "src\pages\admin") {

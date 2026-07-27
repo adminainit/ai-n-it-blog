@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Exit immediately if a command exits with a non-zero status
 set -e
 
@@ -24,12 +23,9 @@ echo "Node version: $(node -v)"
 echo "NPM version: $(npm -v)"
 
 echo "[2/4] Installing dependencies..."
-# Use ci for reliable, clean installs based on package-lock.json if available
-if [ -f "package-lock.json" ]; then
-    npm ci
-else
-    npm install
-fi
+# Ensure architecture-specific binaries (like better-sqlite3, esbuild) are correctly built for the current platform (e.g. ARM/M1/M2/Windows ARM)
+# Using standard install instead of ci to allow native module rebuilds on different architectures if needed
+npm install
 
 echo "[3/4] Securing Public Build (Removing Admin Portal)..."
 rm -rf src/pages/admin

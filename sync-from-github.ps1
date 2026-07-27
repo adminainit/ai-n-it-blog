@@ -2,11 +2,12 @@
 Write-Host "========================================="
 Write-Host " Safe Sync from GitHub (Preserving Local Data)"
 Write-Host "========================================="
+
 Write-Host "This script safely updates your project from GitHub."
 Write-Host "It will automatically save your local configuration changes (like Site Settings)"
 Write-Host "and then pull down the newest code without erasing your data."
-
 Write-Host ""
+
 Write-Host "1. Saving local changes (site.config.js, etc.)..."
 git add .
 try {
@@ -30,6 +31,10 @@ try {
     Write-Host "Please resolve it in your GUI tool (like SourceTree) or editor."
     exit 1
 }
+
+Write-Host ""
+Write-Host "3. Updating dependencies..."
+npm install
 
 Write-Host "========================================="
 Write-Host " Sync Complete! Your data and settings are safe."
