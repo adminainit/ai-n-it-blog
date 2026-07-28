@@ -1,7 +1,7 @@
 export const siteConfig = {
-  "version": "1.1.4",
-  "title": "Innovate, Automate, Collaborate - The Future of Digital Work.",
-  "description": "Your destination for insights on AI, technology, digital transformation, collaboration, email, and the evolving tools that connect modern work",
+  "version": "1.1.2",
+  "title": "Innovate, Automate, Collaborate - The future of digital work.",
+  "description": "AI-n-IT.com delivers thoughtful, professional content on AI, technology, digital transformation, collaboration, email, and the future of connected work.",
   "url": "https://example-corporate.com",
   "author": "Corporate Editorial Team",
   "branding": {
@@ -23,7 +23,7 @@ export const siteConfig = {
     }
   ],
   "homePage": {
-    "heroWelcomeText": "Welcome to AI-n-IT",
+    "heroWelcomeText": "Welcome to AI-n-IT.com",
     "heroButtonText": "Read the Blog",
     "heroButtonLink": "/blog"
   },

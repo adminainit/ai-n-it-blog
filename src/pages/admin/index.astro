@@ -1,0 +1,26 @@
+---
+import AdminApp from '../../components/AdminApp';
+import { getCollection } from 'astro:content';
+import '../../styles/global.css';
+
+const posts = await getCollection('posts');
+const simplifiedPosts = posts.map(post => ({
+  id: post.id,
+  title: post.data.title,
+  date: post.data.date.toISOString(),
+  draft: post.data.draft || false,
+  rawContent: post.body,
+}));
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Dashboard</title>
+  </head>
+  <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans">
+    <AdminApp client:only="react" initialPosts={simplifiedPosts} />
+  </body>
+</html>

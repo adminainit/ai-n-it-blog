@@ -86,35 +86,66 @@ function configApiPlugin() {
               const { exec } = require('child_process');
               const { promisify } = require('util');
               const execAsync = promisify(exec);
+              const path = require('path');
               
               const logs = [];
-              const runCmd = async (cmd) => {
+              const runCmd = async (cmd, cwd = process.cwd()) => {
                 logs.push('> ' + cmd.replace(pat, '***PAT***'));
-                const { stdout, stderr } = await execAsync(cmd);
-                if (stdout) logs.push(stdout);
-                if (stderr) logs.push(stderr);
+                try {
+                  const { stdout, stderr } = await execAsync(cmd, { cwd });
+                  if (stdout) logs.push(stdout);
+                  if (stderr) logs.push(stderr);
+                } catch(e) {
+                  logs.push(e.message.replace(pat, '***PAT***'));
+                  throw e;
+                }
               };
 
               try {
-                // Initialize git if not already
-                if (!fs.existsSync('.git')) {
-                  await runCmd('git init');
+                const rootDir = process.cwd();
+                logs.push("Preparing to push source code to GitHub...");
+                
+                // Ensure git is initialized
+                if (!fs.existsSync(path.join(rootDir, '.git'))) {
+                  await runCmd('git init', rootDir);
                 }
                 
-                // Add and commit
-                await runCmd('git add .');
-                await runCmd('git commit -m "Automated GUI Deployment" || echo "No changes to commit"');
+                // Add and commit all changes locally
+                await runCmd('git config user.name "Auto Deploy"', rootDir);
+                await runCmd('git config user.email "deploy@example.com"', rootDir);
                 
-                // Configure remote (remove existing if needed)
-                await runCmd('git remote remove origin || echo "No origin to remove"');
+                // Add all files
+                await runCmd('git add .', rootDir);
+                
+                // Commit changes (will fail if nothing to commit, which is fine)
+                try {
+                  await runCmd('git commit -m "Automated Source Code Sync"', rootDir);
+                } catch(e) {
+                  logs.push("No new changes to commit.");
+                }
+                
                 const remoteUrl = `https://${pat}@github.com/${username}/${repo}.git`;
-                await runCmd(`git remote add origin ${remoteUrl}`);
+                
+                // Configure remote
+                try {
+                  await runCmd('git remote remove origin', rootDir);
+                } catch(e) {}
+                await runCmd(`git remote add origin ${remoteUrl}`, rootDir);
                 
                 // Rename branch to main
-                await runCmd('git branch -M main');
+                await runCmd('git branch -M main', rootDir);
+                
+                // Fetch and pull latest changes (rebase to avoid merge commits)
+                logs.push("Pulling latest updates from GitHub...");
+                try {
+                  await runCmd('git pull origin main --rebase', rootDir);
+                } catch (e) {
+                  logs.push("Could not pull changes or branch does not exist yet.");
+                }
                 
                 // Push
-                await runCmd('git push -u origin main --force');
+                logs.push("Pushing source code to GitHub...");
+                await runCmd('git push -u origin main', rootDir);
                 
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ success: true, logs }));
@@ -123,6 +154,40 @@ function configApiPlugin() {
                 res.statusCode = 500;
                 res.end(JSON.stringify({ error: cmdError.message.replace(pat, '***PAT***'), logs }));
               }
+            } catch(e) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: e.message }));
+            }
+          });
+        } else if (req.url === '/api/deploy-config' && req.method === 'GET') {
+          try {
+            if (!fs.existsSync('./data')) fs.mkdirSync('./data', { recursive: true });
+            const Database = require('better-sqlite3');
+            const db = new Database('./data/local.db');
+            db.exec('CREATE TABLE IF NOT EXISTS deploy_config (id TEXT PRIMARY KEY, config TEXT)');
+            const row = db.prepare('SELECT config FROM deploy_config WHERE id = ?').get('github');
+            db.close();
+            res.setHeader('Content-Type', 'application/json');
+            res.end(row ? row.config : JSON.stringify({}));
+          } catch(e) {
+            res.statusCode = 500;
+            res.end(JSON.stringify({ error: e.message }));
+          }
+        } else if (req.url === '/api/deploy-config' && req.method === 'POST') {
+          let body = '';
+          req.on('data', chunk => body += chunk);
+          req.on('end', async () => {
+            try {
+              const config = JSON.parse(body);
+              if (!fs.existsSync('./data')) fs.mkdirSync('./data', { recursive: true });
+              const Database = require('better-sqlite3');
+              const db = new Database('./data/local.db');
+              db.exec('CREATE TABLE IF NOT EXISTS deploy_config (id TEXT PRIMARY KEY, config TEXT)');
+              const insertConfig = db.prepare('INSERT OR REPLACE INTO deploy_config (id, config) VALUES (?, ?)');
+              insertConfig.run('github', JSON.stringify(config));
+              db.close();
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: true }));
             } catch(e) {
               res.statusCode = 500;
               res.end(JSON.stringify({ error: e.message }));
