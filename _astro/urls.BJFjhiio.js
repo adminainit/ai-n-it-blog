@@ -1,1 +1,0 @@
-function e(e,t=`/`){let n=String(e||``).trim();return!n||n.startsWith(`#`)||n.startsWith(`//`)||/^(?:[a-z]+:|data:)/i.test(n)?n:`${t.endsWith(`/`)?t:`${t}/`}${n.replace(/^\/+/,``)}`}export{e as t};

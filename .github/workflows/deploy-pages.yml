@@ -1,4 +1,4 @@
-name: Deploy GitHub Pages
+name: Build and Deploy Astro to GitHub Pages
 
 on:
   push:
@@ -15,28 +15,57 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  build:
+    name: Build Astro site
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: "https://ai-n-it.com"
+      BASE_PATH: ""
+      PUBLIC_BUILD: "true"
+      NODE_ENV: "production"
+    steps:
+      - name: Checkout public Astro source
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install locked dependencies
+        run: npm ci --include=optional
+
+      - name: Build Astro site
+        run: npm run build
+
+      - name: Validate public build
+        shell: bash
+        run: |
+          test -f dist/index.html
+          test -f dist/blog/index.html
+          test -f dist/404.html
+          test -f dist/rss.xml
+          test -f dist/sitemap-index.xml
+          test ! -d dist/admin
+          if grep -R -E "href=[\"']/admin|src=[\"']/admin" dist --include='*.html'; then
+            echo "Public build contains a local-only Admin link."
+            exit 1
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
   deploy:
+    name: Deploy GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
     steps:
-      - name: Checkout public site
-        uses: actions/checkout@v4
-      - name: Validate Pages artifact
-        shell: bash
-        run: |
-          test -f index.html
-          test -f blog/index.html
-          test -f 404.html
-          test -f rss.xml
-          test -f sitemap-index.xml
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-      - name: Upload static site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-      - name: Deploy Pages
+      - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
