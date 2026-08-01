@@ -5,6 +5,8 @@ import Footer from '../components/Footer.astro';
 import SEO from '../components/SEO.astro';
 import ThemeManager from '../components/ThemeManager.astro';
 import { ClientRouter } from 'astro:transitions';
+import { siteConfig } from '../../site.config';
+import { fontStack } from '../../brand.options.js';
 
 interface Props {
   title: string;
@@ -12,18 +14,24 @@ interface Props {
 }
 
 const { title, description = "A polished MDX blog." } = Astro.props;
+const primaryColor = siteConfig.theme?.hexColors?.primary || '#071a2b';
+const secondaryColor = siteConfig.theme?.hexColors?.secondary || '#149e92';
+const accentColor = siteConfig.theme?.hexColors?.accent || '#ff825c';
+const headingFont = siteConfig.branding?.typography?.headingFont || 'Newsreader';
+const bodyFont = siteConfig.branding?.typography?.bodyFont || 'Manrope';
+const themeVariables = `--site-primary:${primaryColor};--site-secondary:${secondaryColor};--site-accent:${accentColor};--site-heading-font:${fontStack(headingFont)};--site-body-font:${fontStack(bodyFont)}`;
 ---
 
 <!doctype html>
-<html lang="en" class="antialiased">
+<html lang="en" class="antialiased" style={themeVariables}>
   <head>
     <SEO title={title} description={description} />
     <ThemeManager />
     <ClientRouter />
   </head>
-  <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200 font-sans">
+  <body class="bg-[#f7f5f0] dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-200">
     <Header />
-    <main class="flex-grow pt-20">
+    <main class="flex-grow">
       <slot />
     </main>
     <Footer />

@@ -1,7 +1,9 @@
 ---
 import { Image } from 'astro:assets';
+import ArticleVisual from './ArticleVisual.astro';
 import { sitePath } from '../utils/urls';
-const { post, featured = false } = Astro.props;
+import { siteConfig } from '../../site.config';
+const { post, featured = false, index = 0 } = Astro.props;
 const baseUrl = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
 
 const formattedDate = new Date(post.data.date).toLocaleDateString('en-US', {
@@ -11,14 +13,17 @@ const formattedDate = new Date(post.data.date).toLocaleDateString('en-US', {
 }).toUpperCase();
 ---
 
-<a href={baseUrl + 'blog/' + post.id} class={`group cursor-pointer block ${featured ? 'md:flex md:gap-6' : ''}`}>
-  <div class={`rounded-xl bg-slate-200 dark:bg-slate-800 mb-3 overflow-hidden border border-slate-200 dark:border-slate-800 ${featured ? 'md:w-1/2 md:mb-0 md:h-full' : 'h-48'}`}>
+<a href={baseUrl + 'blog/' + post.id} class:list={[
+  'group relative grid h-full overflow-hidden border border-slate-200/80 bg-white shadow-[0_18px_60px_rgba(7,26,43,0.08)] transition duration-500 hover:-translate-y-1 hover:border-teal-500/40 hover:shadow-[0_24px_70px_rgba(7,26,43,0.14)] dark:border-slate-800 dark:bg-slate-900',
+  featured ? 'rounded-[2rem] md:grid-cols-[1.12fr_.88fr]' : 'rounded-[1.5rem] grid-rows-[auto_1fr]'
+]}>
+  <div class:list={['overflow-hidden bg-slate-200 dark:bg-slate-800', featured ? 'min-h-[22rem] md:min-h-[30rem]' : 'h-52']}>
     {post.data.image ? (
       typeof post.data.image === 'string' ? (
         <img
           src={sitePath(post.data.image)}
           alt={post.data.title}
-          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           referrerpolicy="no-referrer"
         />
       ) : (
@@ -26,33 +31,41 @@ const formattedDate = new Date(post.data.date).toLocaleDateString('en-US', {
           src={post.data.image} 
           alt={post.data.title}
           width={featured ? 800 : 400}
-          class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
       )
     ) : (
-      <div class="w-full h-full flex items-center justify-center text-slate-400 text-[10px] uppercase font-bold">
-        No image
-      </div>
+      <ArticleVisual post={post} featured={featured} index={index} />
     )}
   </div>
   
-  <div class={`flex flex-col ${featured ? 'md:w-1/2 justify-center' : ''}`}>
-    <div class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 mb-1 flex items-center gap-2">
+  <div class:list={['flex flex-col', featured ? 'justify-center p-7 md:p-10 lg:p-12' : 'p-6']}>
+    <div class="mb-4 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.13em] text-teal-700 dark:text-teal-300">
       {formattedDate}
       {post.data.tags && post.data.tags.length > 0 && (
         <>
-          <span class="text-slate-300 dark:text-slate-600">•</span>
+          <span class="text-coral-500">/</span>
           <span class="font-mono uppercase">{post.data.tags[0]}</span>
         </>
       )}
     </div>
     
-    <h4 class={`font-bold leading-tight text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors mb-2 ${featured ? 'text-xl' : 'text-base'}`}>
+    <h3 class:list={[
+      'mb-3 text-balance font-display font-semibold leading-[1.04] text-slate-950 transition-colors group-hover:text-teal-700 dark:text-white dark:group-hover:text-teal-300',
+      featured ? 'text-3xl md:text-4xl lg:text-[2.75rem]' : 'text-[1.65rem]'
+    ]}>
       {post.data.title}
-    </h4>
+    </h3>
     
-    <p class="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+    <p class:list={['text-slate-600 dark:text-slate-300', featured ? 'text-base leading-7' : 'line-clamp-3 text-sm leading-6']}>
       {post.data.description}
     </p>
+
+    <span class="mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.13em] text-slate-900 dark:text-white">
+      {siteConfig.articlePage?.readStoryText || 'Read story'}
+      <svg class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 10h11m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </span>
   </div>
 </a>

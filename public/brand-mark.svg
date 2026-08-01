@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">AI-n-IT brand mark</title>
+  <desc id="desc">A geometric monogram formed by connected technology nodes.</desc>
+  <defs>
+    <linearGradient id="brand-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#23C6B7"/>
+      <stop offset="1" stop-color="#1479D1"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="#071A2B"/>
+  <path d="M16 43 27.5 17h9L48 43h-8.4l-2.1-5.4h-11L24.4 43H16Zm13.3-12.7h5.4L32 23.4l-2.7 6.9Z" fill="url(#brand-gradient)"/>
+  <circle cx="16" cy="43" r="3" fill="#FF825C"/>
+  <circle cx="48" cy="43" r="3" fill="#FF825C"/>
+  <path d="M19 43h5.5M39.5 43H45" stroke="#FF825C" stroke-width="2" stroke-linecap="round"/>
+</svg>

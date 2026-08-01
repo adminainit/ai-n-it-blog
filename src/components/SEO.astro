@@ -1,4 +1,7 @@
 ---
+import { siteConfig } from '../../site.config';
+import { googleFontsStylesheet } from '../../brand.options.js';
+
 interface Props {
   title: string;
   description: string;
@@ -6,6 +9,9 @@ interface Props {
 
 const { title, description } = Astro.props;
 const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
+const headingFont = siteConfig.branding?.typography?.headingFont || 'Newsreader';
+const bodyFont = siteConfig.branding?.typography?.bodyFont || 'Manrope';
+const fontStylesheet = googleFontsStylesheet([headingFont, bodyFont], import.meta.env.DEV);
 ---
 
 <meta charset="UTF-8" />
@@ -15,4 +21,4 @@ const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site) : unde
 {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+{fontStylesheet && <link href={fontStylesheet} rel="stylesheet">}

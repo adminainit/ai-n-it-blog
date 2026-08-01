@@ -14,19 +14,23 @@ export default {
           600: '#475569',
           900: '#0f172a',
           950: '#020617',
-          DEFAULT: '#0f172a',
+          DEFAULT: '#102a43',
         },
         secondary: {
-          DEFAULT: '#475569',
+          DEFAULT: '#2f80ed',
         },
         accent: {
-          DEFAULT: '#3b82f6',
+          DEFAULT: '#f2c94c',
+        },
+        coral: {
+          500: '#ff825c',
+          600: '#e96d49',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        display: ['Space Grotesk', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+        sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        display: ['Newsreader', 'Georgia', 'serif'],
+        mono: ['IBM Plex Mono', 'ui-monospace', 'SFMono-Regular', 'monospace'],
       },
     },
   },

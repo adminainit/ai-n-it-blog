@@ -6,17 +6,14 @@ import { sitePath } from '../utils/urls';
 const baseUrl = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
 ---
 
-<header class="h-16 flex items-center justify-between px-4 md:px-10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-200">
+<header class="sticky top-0 z-50 border-b border-slate-200/80 bg-[#f7f5f0]/90 px-4 backdrop-blur-xl transition-colors duration-200 dark:border-slate-800 dark:bg-slate-950/88 md:px-10">
+  <div class="mx-auto flex h-[4.5rem] max-w-[1380px] items-center justify-between">
   <div class="flex items-center gap-2">
-    <a href={import.meta.env.BASE_URL} class="flex items-center gap-2 text-xl font-extrabold tracking-tighter text-slate-900 dark:text-white transition-all duration-300 hover:text-indigo-600 dark:hover:text-indigo-400">
+    <a href={import.meta.env.BASE_URL} class="group flex items-center gap-3 text-lg font-extrabold tracking-[-0.04em] text-slate-950 transition duration-300 hover:text-teal-700 dark:text-white dark:hover:text-teal-300">
       {siteConfig.branding?.logoImage ? (
-        <img src={sitePath(siteConfig.branding.logoImage)} alt="Logo" class="max-h-12 max-w-[200px] w-auto object-contain" />
-      ) : (
-        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0">
-          <div class="w-4 h-4 border-2 border-white rotate-45"></div>
-        </div>
-      )}
-      <span class="hidden sm:block">{siteConfig.branding?.logoText || siteConfig.title}</span>
+        <img src={sitePath(siteConfig.branding.logoImage)} alt={`${siteConfig.branding?.logoText || siteConfig.title} logo`} class="h-10 w-10 object-contain transition-transform duration-300 group-hover:-rotate-3 group-hover:scale-105" />
+      ) : null}
+      <span class="hidden sm:block">{siteConfig.branding?.logoText || siteConfig.title}<span class="text-coral-500">.</span></span>
     </a>
   </div>
   
@@ -24,19 +21,20 @@ const baseUrl = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_UR
     <Search id="search" className="pagefind-ui" uiOptions={{ showImages: false, showEmptyFilters: true }} />
   </div>
 
-  <nav class="flex items-center gap-6 md:gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
-    <a href={import.meta.env.BASE_URL} class="hover:text-slate-900 dark:hover:text-white transition-colors duration-300">Home</a>
-    <a href={baseUrl + 'blog'} class="hover:text-slate-900 dark:hover:text-white transition-colors duration-300">Blog</a>
+  <nav class="flex items-center gap-4 text-xs font-bold uppercase tracking-[0.1em] text-slate-600 dark:text-slate-300 sm:gap-6 md:gap-8">
+    <a href={import.meta.env.BASE_URL} class="transition-colors duration-300 hover:text-[var(--site-secondary)]">{siteConfig.navigation?.homeLabel || 'Home'}</a>
+    <a href={baseUrl + 'blog'} class="transition-colors duration-300 hover:text-[var(--site-secondary)]">{siteConfig.navigation?.blogLabel || 'Insights'}</a>
     <ThemeToggle client:load />
   </nav>
+  </div>
 </header>
 
 <style is:global>
   .pagefind-ui {
     --pagefind-ui-scale: 0.8;
-    --pagefind-ui-primary: #4f46e5;
+    --pagefind-ui-primary: var(--site-secondary);
     --pagefind-ui-text: #1e293b;
-    --pagefind-ui-background: #ffffff;
+    --pagefind-ui-background: #f7f5f0;
     --pagefind-ui-border: #e2e8f0;
     --pagefind-ui-tag: #f8fafc;
     --pagefind-ui-border-width: 1px;
