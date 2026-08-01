@@ -36,36 +36,36 @@ export default function Hero({ postCount = 0 }: HeroProps) {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className={`grid w-full items-center gap-12 ${heroImage ? 'lg:grid-cols-[.9fr_1.1fr] lg:gap-16' : 'max-w-4xl'}`}
+        className={`grid w-full items-center gap-12 ${heroImage ? 'lg:grid-cols-[minmax(0,1.05fr)_minmax(0,.95fr)] lg:gap-14' : 'max-w-4xl'}`}
       >
         <div className="flex flex-col items-start">
-          <motion.span variants={itemVariants} className="mb-7 inline-flex w-max items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-200 backdrop-blur">
+          <motion.span variants={itemVariants} className="type-eyebrow mb-7 inline-flex w-max max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 font-mono font-semibold uppercase tracking-[0.16em] text-teal-200 backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--site-accent)] shadow-[0_0_0_4px_rgba(255,130,92,.15)]" />
             {siteConfig.homePage?.heroWelcomeText || 'Intelligence for meaningful change'}
           </motion.span>
 
-          <motion.h1 variants={itemVariants} className="max-w-2xl text-balance font-display text-5xl font-semibold leading-[.94] tracking-[-0.04em] text-[#f5f0e8] sm:text-6xl md:text-7xl lg:text-[5.4rem]">
+          <motion.h1 variants={itemVariants} className="type-hero-title max-w-3xl text-balance font-display font-semibold tracking-[-0.04em] text-[#f5f0e8]">
             {siteConfig.homePage?.heroTitle || 'Where intelligence meets'}{' '}
             <span className="text-[var(--site-secondary)]">{siteConfig.homePage?.heroHighlight || 'execution.'}</span>
           </motion.h1>
 
-          <motion.p variants={itemVariants} className="mt-7 max-w-xl text-base leading-7 text-slate-300 md:text-lg md:leading-8">
+          <motion.p variants={itemVariants} className="type-hero-body mt-7 max-w-2xl text-slate-300">
             {siteConfig.description}
           </motion.p>
 
           <motion.div variants={itemVariants} className="mt-9 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-            <a href={heroLink} className="inline-flex items-center justify-center gap-3 rounded-full bg-[var(--site-accent)] px-7 py-3.5 text-sm font-extrabold text-[var(--site-primary)] transition duration-300 hover:-translate-y-0.5 hover:brightness-110">
+            <a href={heroLink} className="type-button inline-flex min-h-12 items-center justify-center gap-3 rounded-full bg-[var(--site-accent)] px-7 py-3.5 font-extrabold text-[var(--site-primary)] transition duration-300 hover:-translate-y-0.5 hover:brightness-110">
               {siteConfig.homePage?.heroButtonText || 'Explore the insights'}
               <span aria-hidden="true">→</span>
             </a>
-            <a href={secondaryLink} className="inline-flex items-center justify-center rounded-full border border-white/20 px-7 py-3.5 text-sm font-bold text-white transition hover:border-white/50 hover:bg-white/5">
+            <a href={secondaryLink} className="type-button inline-flex min-h-12 items-center justify-center rounded-full border border-white/20 px-7 py-3.5 font-bold text-white transition hover:border-white/50 hover:bg-white/5">
               {siteConfig.homePage?.heroSecondaryButtonText || 'View latest stories'}
             </a>
           </motion.div>
 
-          <motion.div variants={itemVariants} className="mt-10 flex flex-wrap gap-x-8 gap-y-4 border-t border-white/10 pt-6 text-xs text-slate-400">
-            <span><strong className="mr-2 text-lg text-white">{postCount}</strong> {siteConfig.homePage?.postCountLabel || 'published insights'}</span>
-            <span><strong className="mr-2 text-lg text-white">{siteConfig.homePage?.trustValue || '100%'}</strong> {siteConfig.homePage?.trustLabel || 'independent'}</span>
+          <motion.div variants={itemVariants} className="type-eyebrow mt-10 grid w-full max-w-xl grid-cols-1 gap-4 border-t border-white/10 pt-6 text-slate-400 sm:grid-cols-2">
+            <span className="flex items-baseline"><strong className="type-hero-body mr-2 font-bold text-white">{postCount}</strong> {siteConfig.homePage?.postCountLabel || 'published insights'}</span>
+            <span className="flex items-baseline"><strong className="type-hero-body mr-2 font-bold text-white">{siteConfig.homePage?.trustValue || '100%'}</strong> {siteConfig.homePage?.trustLabel || 'independent'}</span>
           </motion.div>
         </div>
 
@@ -75,8 +75,8 @@ export default function Hero({ postCount = 0 }: HeroProps) {
           <div className="absolute bottom-[8%] left-[4%] z-20 flex items-center gap-3 rounded-2xl border border-white/15 bg-[var(--site-primary)]/90 px-4 py-3 shadow-2xl backdrop-blur md:left-[8%]">
             {logoImage && <img src={sitePath(logoImage)} alt="" className="h-9 w-9 object-contain" />}
             <div>
-              <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-white/70">{siteConfig.homePage?.visualEyebrow || 'Perspective'}</span>
-              <strong className="text-xs text-white">{siteConfig.homePage?.visualTopics || 'AI · Automation · Digital work'}</strong>
+              <span className="type-eyebrow block font-mono uppercase tracking-[0.16em] text-white/70">{siteConfig.homePage?.visualEyebrow || 'Perspective'}</span>
+              <strong className="type-button text-white">{siteConfig.homePage?.visualTopics || 'AI · Automation · Digital work'}</strong>
             </div>
           </div>
         </motion.div>}

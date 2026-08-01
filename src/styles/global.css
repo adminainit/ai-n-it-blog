@@ -19,6 +19,7 @@
 
   body {
     font-family: var(--site-body-font, 'Manrope', ui-sans-serif, system-ui, sans-serif);
+    font-size: var(--site-body-size, 16px);
     background-image:
       radial-gradient(circle at 15% 5%, color-mix(in srgb, var(--site-secondary, #149e92) 9%, transparent), transparent 28rem),
       radial-gradient(circle at 90% 14%, color-mix(in srgb, var(--site-accent, #ff825c) 9%, transparent), transparent 25rem);
@@ -37,6 +38,46 @@
 
   .font-display {
     font-family: var(--site-heading-font, 'Newsreader', Georgia, serif);
+  }
+
+  .type-eyebrow {
+    font-size: var(--site-eyebrow-size, 11px);
+    line-height: 1.35;
+  }
+
+  .type-button {
+    font-size: var(--site-button-size, 14px);
+    line-height: 1.25;
+  }
+
+  .type-body {
+    font-size: clamp(14px, 1.35vw, var(--site-body-size, 16px));
+    line-height: 1.75;
+  }
+
+  .type-hero-title {
+    font-size: clamp(3rem, 6.4vw, var(--site-hero-title-size, 86px));
+    line-height: 0.96;
+  }
+
+  .type-hero-body {
+    font-size: clamp(15px, 1.6vw, var(--site-hero-body-size, 18px));
+    line-height: 1.7;
+  }
+
+  .type-section-title {
+    font-size: clamp(2rem, 4vw, var(--site-section-title-size, 48px));
+    line-height: 1.02;
+  }
+
+  .type-card-title {
+    font-size: clamp(20px, 2.2vw, var(--site-card-title-size, 26px));
+    line-height: 1.08;
+  }
+
+  .type-featured-card-title {
+    font-size: clamp(28px, 3.7vw, calc(var(--site-card-title-size, 26px) * 1.7));
+    line-height: 1.04;
   }
 
   .surface-grid {

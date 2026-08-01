@@ -168,6 +168,47 @@ export const themePresets = [
   },
 ];
 
+export const typographyScalePresets = [
+  {
+    id: 'compact',
+    name: 'Compact',
+    description: 'A restrained hierarchy for information-dense homepages and smaller screens.',
+    sizes: { body: 15, eyebrow: 10, button: 13, heroTitle: 72, heroBody: 16, sectionTitle: 40, cardTitle: 24 },
+  },
+  {
+    id: 'balanced',
+    name: 'Balanced',
+    description: 'The recommended all-purpose scale with clear hierarchy and comfortable reading.',
+    sizes: { body: 16, eyebrow: 11, button: 14, heroTitle: 86, heroBody: 18, sectionTitle: 48, cardTitle: 26 },
+  },
+  {
+    id: 'editorial',
+    name: 'Editorial',
+    description: 'Larger display headlines and generous reading text for a magazine-style voice.',
+    sizes: { body: 17, eyebrow: 11, button: 14, heroTitle: 92, heroBody: 19, sectionTitle: 52, cardTitle: 28 },
+  },
+  {
+    id: 'accessible',
+    name: 'Accessible',
+    description: 'Larger body, label, button, and card text while keeping display headings controlled.',
+    sizes: { body: 18, eyebrow: 12, button: 16, heroTitle: 80, heroBody: 20, sectionTitle: 48, cardTitle: 30 },
+  },
+];
+
+export const typographySizeLimits = {
+  body: { min: 14, max: 20 },
+  eyebrow: { min: 10, max: 14 },
+  button: { min: 12, max: 18 },
+  heroTitle: { min: 48, max: 104 },
+  heroBody: { min: 14, max: 24 },
+  sectionTitle: { min: 28, max: 64 },
+  cardTitle: { min: 20, max: 36 },
+};
+
+export function getTypographyScalePreset(id = 'balanced') {
+  return typographyScalePresets.find(preset => preset.id === id) || typographyScalePresets[1];
+}
+
 export function getFontOption(name) {
   return fontOptions.find(option => option.name === name) || fontOptions[0];
 }

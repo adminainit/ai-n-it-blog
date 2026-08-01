@@ -40,7 +40,7 @@ const formattedDate = new Date(post.data.date).toLocaleDateString('en-US', {
   </div>
   
   <div class:list={['flex flex-col', featured ? 'justify-center p-7 md:p-10 lg:p-12' : 'p-6']}>
-    <div class="mb-4 flex items-center gap-2 font-mono text-[10px] font-semibold uppercase tracking-[0.13em] text-teal-700 dark:text-teal-300">
+    <div class="type-eyebrow mb-4 flex flex-wrap items-center gap-2 font-mono font-semibold uppercase tracking-[0.13em] text-teal-700 dark:text-teal-300">
       {formattedDate}
       {post.data.tags && post.data.tags.length > 0 && (
         <>
@@ -51,17 +51,17 @@ const formattedDate = new Date(post.data.date).toLocaleDateString('en-US', {
     </div>
     
     <h3 class:list={[
-      'mb-3 text-balance font-display font-semibold leading-[1.04] text-slate-950 transition-colors group-hover:text-teal-700 dark:text-white dark:group-hover:text-teal-300',
-      featured ? 'text-3xl md:text-4xl lg:text-[2.75rem]' : 'text-[1.65rem]'
+      'mb-3 text-balance font-display font-semibold text-slate-950 transition-colors group-hover:text-teal-700 dark:text-white dark:group-hover:text-teal-300',
+      featured ? 'type-featured-card-title' : 'type-card-title'
     ]}>
       {post.data.title}
     </h3>
     
-    <p class:list={['text-slate-600 dark:text-slate-300', featured ? 'text-base leading-7' : 'line-clamp-3 text-sm leading-6']}>
+    <p class:list={['type-body text-slate-600 dark:text-slate-300', featured ? '' : 'line-clamp-3']}>
       {post.data.description}
     </p>
 
-    <span class="mt-6 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.13em] text-slate-900 dark:text-white">
+    <span class="type-button mt-6 inline-flex items-center gap-2 font-bold uppercase tracking-[0.13em] text-slate-900 dark:text-white">
       {siteConfig.articlePage?.readStoryText || 'Read story'}
       <svg class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 20 20" fill="none" aria-hidden="true">
         <path d="M4 10h11m-4-4 4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />

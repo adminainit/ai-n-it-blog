@@ -23,14 +23,14 @@ const recentPosts = sortedPosts.slice(3, 6);
 
     {leadPost && (
       <section id="latest-insights" class="scroll-mt-24">
-        <header class="mb-8 flex flex-col gap-5 border-b border-slate-300/80 pb-6 sm:flex-row sm:items-end sm:justify-between dark:border-slate-700">
-          <div>
-            <p class="mb-3 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--site-secondary)]">{siteConfig.homePage?.latestEyebrow || 'The intelligence desk'}</p>
-            <h2 class="text-balance font-display text-4xl font-semibold tracking-[-0.025em] text-slate-950 sm:text-5xl dark:text-white">{siteConfig.homePage?.latestTitle || 'Latest perspectives'}</h2>
+        <header class="mb-8 grid gap-5 border-b border-slate-300/80 pb-7 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,32rem)] lg:items-end lg:gap-10 dark:border-slate-700">
+          <div class="max-w-3xl">
+            <p class="type-eyebrow mb-3 font-mono font-semibold uppercase tracking-[0.18em] text-[var(--site-secondary)]">{siteConfig.homePage?.latestEyebrow || 'The intelligence desk'}</p>
+            <h2 class="type-section-title text-balance font-display font-semibold tracking-[-0.025em] text-slate-950 dark:text-white">{siteConfig.homePage?.latestTitle || 'Latest perspectives'}</h2>
           </div>
-          <div class="flex items-center gap-4">
-            <span class="hidden text-sm text-slate-500 md:block">{siteConfig.homePage?.latestDescription || 'Every current article, visible at a glance.'}</span>
-            <a href={baseUrl + 'blog'} class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.12em] text-slate-900 transition hover:text-teal-700 dark:text-white dark:hover:text-teal-300">
+          <div class="flex flex-col items-start gap-4 lg:items-end lg:text-right">
+            <p class="type-body max-w-xl text-slate-600 dark:text-slate-300">{siteConfig.homePage?.latestDescription || 'Every current article, visible at a glance.'}</p>
+            <a href={baseUrl + 'blog'} class="type-button inline-flex items-center gap-2 font-extrabold uppercase tracking-[0.12em] text-slate-900 transition hover:text-teal-700 dark:text-white dark:hover:text-teal-300">
               {siteConfig.homePage?.latestLinkText || 'View archive'} <span aria-hidden="true">↗</span>
             </a>
           </div>
@@ -52,12 +52,12 @@ const recentPosts = sortedPosts.slice(3, 6);
 
   {recentPosts.length > 0 && (
     <section class="mx-auto flex max-w-[1380px] flex-col gap-6 px-4 pb-20 sm:px-6 lg:px-10">
-      <div class="flex items-end justify-between border-b border-slate-300/80 pb-5 dark:border-slate-700">
-        <div>
-          <p class="mb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--site-accent)]">{siteConfig.homePage?.archiveEyebrow || 'From the archive'}</p>
-          <h2 class="font-display text-3xl font-semibold text-slate-950 dark:text-white">{siteConfig.homePage?.archiveTitle || 'More to explore'}</h2>
+      <div class="flex flex-col gap-4 border-b border-slate-300/80 pb-6 sm:flex-row sm:items-end sm:justify-between dark:border-slate-700">
+        <div class="max-w-3xl">
+          <p class="type-eyebrow mb-2 font-mono font-semibold uppercase tracking-[0.18em] text-[var(--site-accent)]">{siteConfig.homePage?.archiveEyebrow || 'From the archive'}</p>
+          <h2 class="type-section-title text-balance font-display font-semibold text-slate-950 dark:text-white">{siteConfig.homePage?.archiveTitle || 'More to explore'}</h2>
         </div>
-        <a href={baseUrl + 'blog'} class="text-xs font-extrabold uppercase tracking-[0.12em] text-slate-900 hover:text-[var(--site-secondary)] dark:text-white">{siteConfig.homePage?.archiveLinkText || 'View all'}</a>
+        <a href={baseUrl + 'blog'} class="type-button font-extrabold uppercase tracking-[0.12em] text-slate-900 hover:text-[var(--site-secondary)] dark:text-white">{siteConfig.homePage?.archiveLinkText || 'View all'}</a>
       </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

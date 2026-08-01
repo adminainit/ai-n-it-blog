@@ -1,15 +1,25 @@
 export const siteConfig = {
-  "version": "1.2.7",
+  "version": "1.2.5",
   "title": "AI-n-IT Insights",
-  "description": "Independent perspectives on artificial intelligence, automation, and the future of digital work.",
+  "description": "AI-n-IT.com is your destination for insights on AI, technology, digital transformation, collaboration, email, and the evolving tools that connect modern work.",
   "url": "https://example-corporate.com",
   "author": "Rishab Sharma",
   "branding": {
     "logoText": "AI-n-IT",
     "logoImage": "/logo-custom.svg",
     "typography": {
-      "headingFont": "Inter",
-      "bodyFont": "Inter"
+      "headingFont": "Space Grotesk",
+      "bodyFont": "Inter",
+      "sizePreset": "balanced",
+      "sizes": {
+        "body": 16,
+        "eyebrow": 11,
+        "button": 14,
+        "heroTitle": 86,
+        "heroBody": 18,
+        "sectionTitle": 48,
+        "cardTitle": 26
+      }
     }
   },
   "navigation": {
@@ -18,18 +28,14 @@ export const siteConfig = {
   },
   "socialLinks": [
     {
-      "name": "Twitter",
-      "url": "https://twitter.com"
-    },
-    {
       "name": "LinkedIn",
-      "url": "https://linkedin.com"
+      "url": "https://www.linkedin.com/in/rishabsharma/"
     }
   ],
   "homePage": {
     "heroWelcomeText": "The future of digital work",
-    "heroTitle": "Innovate, Automate, Collaborate with",
-    "heroHighlight": " AI-n-IT.com",
+    "heroTitle": "Innovate, Automate, Collaborate with ",
+    "heroHighlight": "AI-n-IT.com",
     "heroButtonText": "Explore the insights",
     "heroButtonLink": "/blog",
     "heroSecondaryButtonText": "View latest stories",
@@ -70,14 +76,14 @@ export const siteConfig = {
     "blogButtonText": "Browse articles"
   },
   "footer": {
-    "builtWithText": "Built with Astro & MDX."
+    "builtWithText": "Built with Astro and Rishab Sharma"
   },
   "theme": {
     "hexColors": {
-      "primary": "#102a43",
-      "secondary": "#2f80ed",
-      "accent": "#f2c94c"
+      "primary": "#0b132b",
+      "secondary": "#5bc0be",
+      "accent": "#f6ae2d"
     },
-    "preset": "custom"
+    "preset": "midnight-signal"
   }
 };

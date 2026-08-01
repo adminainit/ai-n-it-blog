@@ -14,13 +14,13 @@ export default {
           600: '#475569',
           900: '#0f172a',
           950: '#020617',
-          DEFAULT: '#102a43',
+          DEFAULT: '#0b132b',
         },
         secondary: {
-          DEFAULT: '#2f80ed',
+          DEFAULT: '#5bc0be',
         },
         accent: {
-          DEFAULT: '#f2c94c',
+          DEFAULT: '#f6ae2d',
         },
         coral: {
           500: '#ff825c',

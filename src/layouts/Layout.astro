@@ -6,7 +6,7 @@ import SEO from '../components/SEO.astro';
 import ThemeManager from '../components/ThemeManager.astro';
 import { ClientRouter } from 'astro:transitions';
 import { siteConfig } from '../../site.config';
-import { fontStack } from '../../brand.options.js';
+import { fontStack, getTypographyScalePreset, typographySizeLimits } from '../../brand.options.js';
 
 interface Props {
   title: string;
@@ -19,7 +19,27 @@ const secondaryColor = siteConfig.theme?.hexColors?.secondary || '#149e92';
 const accentColor = siteConfig.theme?.hexColors?.accent || '#ff825c';
 const headingFont = siteConfig.branding?.typography?.headingFont || 'Newsreader';
 const bodyFont = siteConfig.branding?.typography?.bodyFont || 'Manrope';
-const themeVariables = `--site-primary:${primaryColor};--site-secondary:${secondaryColor};--site-accent:${accentColor};--site-heading-font:${fontStack(headingFont)};--site-body-font:${fontStack(bodyFont)}`;
+const typographyPreset = getTypographyScalePreset(siteConfig.branding?.typography?.sizePreset || 'balanced');
+const configuredSizes = { ...typographyPreset.sizes, ...(siteConfig.branding?.typography?.sizes || {}) };
+const safeSize = (key: keyof typeof typographySizeLimits) => {
+  const limits = typographySizeLimits[key];
+  const value = Number(configuredSizes[key]);
+  return Number.isFinite(value) ? Math.min(limits.max, Math.max(limits.min, value)) : typographyPreset.sizes[key];
+};
+const themeVariables = [
+  `--site-primary:${primaryColor}`,
+  `--site-secondary:${secondaryColor}`,
+  `--site-accent:${accentColor}`,
+  `--site-heading-font:${fontStack(headingFont)}`,
+  `--site-body-font:${fontStack(bodyFont)}`,
+  `--site-body-size:${safeSize('body')}px`,
+  `--site-eyebrow-size:${safeSize('eyebrow')}px`,
+  `--site-button-size:${safeSize('button')}px`,
+  `--site-hero-title-size:${safeSize('heroTitle')}px`,
+  `--site-hero-body-size:${safeSize('heroBody')}px`,
+  `--site-section-title-size:${safeSize('sectionTitle')}px`,
+  `--site-card-title-size:${safeSize('cardTitle')}px`,
+].join(';');
 ---
 
 <!doctype html>
