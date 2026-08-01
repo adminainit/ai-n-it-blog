@@ -1,21 +1,21 @@
 export const siteConfig = {
-  "version": "1.2.5",
+  "version": "1.2.6",
   "title": "AI-n-IT Insights",
   "description": "AI-n-IT.com is your destination for insights on AI, technology, digital transformation, collaboration, email, and the evolving tools that connect modern work.",
   "url": "https://example-corporate.com",
-  "author": "Rishab Sharma",
+  "author": "Corporate Editorial Team",
   "branding": {
     "logoText": "AI-n-IT",
     "logoImage": "/logo-custom.svg",
     "typography": {
       "headingFont": "Space Grotesk",
       "bodyFont": "Inter",
-      "sizePreset": "balanced",
+      "sizePreset": "custom",
       "sizes": {
         "body": 16,
-        "eyebrow": 11,
+        "eyebrow": 12,
         "button": 14,
-        "heroTitle": 86,
+        "heroTitle": 48,
         "heroBody": 18,
         "sectionTitle": 48,
         "cardTitle": 26
@@ -34,7 +34,7 @@ export const siteConfig = {
   ],
   "homePage": {
     "heroWelcomeText": "The future of digital work",
-    "heroTitle": "Innovate, Automate, Collaborate with ",
+    "heroTitle": "Innovate, Automate, Collaborate /",
     "heroHighlight": "AI-n-IT.com",
     "heroButtonText": "Explore the insights",
     "heroButtonLink": "/blog",
@@ -57,11 +57,11 @@ export const siteConfig = {
   },
   "blogPage": {
     "seoTitle": "Blog",
-    "seoDescription": "AI-n-IT.com is your destination for insights on AI, technology, digital transformation, collaboration, email, and the evolving tools that connect modern work.",
+    "seoDescription": "Read our latest articles and perspectives.",
     "eyebrow": "AI-n-IT knowledge library",
     "storyCountLabel": "stories",
     "title": "Intelligence worth putting to work.",
-    "description": "Explore independent perspectives on artificial intelligence, automation, and the decisions shaping modern digital organizations.",
+    "description": "Explore independent perspectives on artificial intelligence, email, collaboration and automation, and the decisions shaping modern digital organizations.",
     "emptyTitle": "No posts found",
     "emptyDescription": "Check back later for new content!"
   },
@@ -76,7 +76,7 @@ export const siteConfig = {
     "blogButtonText": "Browse articles"
   },
   "footer": {
-    "builtWithText": "Built with Astro and Rishab Sharma"
+    "builtWithText": "Built with Astro by Rishab Sharma."
   },
   "theme": {
     "hexColors": {
